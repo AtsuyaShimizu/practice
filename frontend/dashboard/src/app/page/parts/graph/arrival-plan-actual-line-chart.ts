@@ -172,6 +172,14 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
   }
 
   /**
+   * X軸ラベルのY座標（HTML配置用）
+   */
+  getXAxisLabelY(): number {
+    const scaleY = this.svgHeight() / this.height;
+    return (this.chartHeight + this.margin.top + 14) * scaleY;
+  }
+
+  /**
    * Y軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
    */
   getYAxisLabels(): Array<{ y: number; label: string; pixelY: number; pixelX: number }> {
@@ -292,9 +300,10 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
    * Y軸タイトルの位置
    */
   getYAxisTitlePosition(): { pixelX: number; pixelY: number } {
+    const scaleX = this.svgWidth() / this.width;
     const scaleY = this.svgHeight() / this.height;
     return {
-      pixelX: 6,
+      pixelX: Math.max(16, (this.margin.left * scaleX) / 2),
       pixelY: (this.chartHeight / 2 + this.margin.top) * scaleY,
     };
   }
