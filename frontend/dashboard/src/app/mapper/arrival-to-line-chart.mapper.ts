@@ -2,57 +2,62 @@ import { ArrivalPlan, ArrivalActual } from '../model/domain';
 import { LineChartModel, LineChartDataPoint } from '../model/graph';
 
 /**
- * 入荷予定と実績データを日付ごとに集計
+ * 入荷予定と実績データを1時間ごとに集計
  */
-interface DateAggregation {
-  date: string;
+interface HourlyAggregation {
+  dateTime: string; // ISO形式の日時（時間まで）
   planTotal: number;
   actualTotal: number;
 }
 
 /**
- * 日時文字列から日付部分のみを抽出
+ * 日時文字列から時間単位（YYYY-MM-DDTHH:00）を抽出
  */
-function extractDate(dateTime: string): string {
-  return dateTime.split('T')[0];
+function extractHour(dateTime: string): string {
+  const date = new Date(dateTime);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hour}:00`;
 }
 
 /**
- * 入荷予定と実績データを日付ごとに集計する
+ * 入荷予定と実績データを1時間ごとに集計する
  */
-function aggregateByDate(
+function aggregateByHour(
   plans: ArrivalPlan[],
   actuals: ArrivalActual[]
-): DateAggregation[] {
-  const dateMap = new Map<string, DateAggregation>();
+): HourlyAggregation[] {
+  const hourMap = new Map<string, HourlyAggregation>();
 
   // 予定データを集計
   plans.forEach(plan => {
-    const date = extractDate(plan.arrivalDateTime);
-    const existing = dateMap.get(date) || {
-      date,
+    const hour = extractHour(plan.arrivalDateTime);
+    const existing = hourMap.get(hour) || {
+      dateTime: hour,
       planTotal: 0,
       actualTotal: 0,
     };
     existing.planTotal += plan.quantity;
-    dateMap.set(date, existing);
+    hourMap.set(hour, existing);
   });
 
   // 実績データを集計
   actuals.forEach(actual => {
-    const date = extractDate(actual.actualArrivalDateTime);
-    const existing = dateMap.get(date) || {
-      date,
+    const hour = extractHour(actual.actualArrivalDateTime);
+    const existing = hourMap.get(hour) || {
+      dateTime: hour,
       planTotal: 0,
       actualTotal: 0,
     };
     existing.actualTotal += actual.quantity;
-    dateMap.set(date, existing);
+    hourMap.set(hour, existing);
   });
 
-  // 日付順にソート
-  return Array.from(dateMap.values()).sort((a, b) =>
-    a.date.localeCompare(b.date)
+  // 時間順にソート
+  return Array.from(hourMap.values()).sort((a, b) =>
+    a.dateTime.localeCompare(b.dateTime)
   );
 }
 
@@ -72,15 +77,15 @@ export function mapArrivalToLineChart(
     yAxisLabel?: string;
   }
 ): LineChartModel {
-  const aggregated = aggregateByDate(plans, actuals);
+  const aggregated = aggregateByHour(plans, actuals);
 
   const planDataPoints: LineChartDataPoint[] = aggregated.map(item => ({
-    x: item.date,
+    x: item.dateTime,
     y: item.planTotal,
   }));
 
   const actualDataPoints: LineChartDataPoint[] = aggregated.map(item => ({
-    x: item.date,
+    x: item.dateTime,
     y: item.actualTotal,
   }));
 
@@ -102,8 +107,8 @@ export function mapArrivalToLineChart(
       },
     ],
     config: {
-      title: config?.title || '入荷予実推移',
-      xAxisLabel: config?.xAxisLabel || '入荷日',
+      title: config?.title || '入荷予実推移（1時間単位）',
+      xAxisLabel: config?.xAxisLabel || '時刻',
       yAxisLabel: config?.yAxisLabel || '数量',
       showLegend: true,
       showGrid: true,

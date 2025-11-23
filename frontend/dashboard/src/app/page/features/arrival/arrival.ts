@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { BoardComponent } from '../../parts/board/board';
 import { ArrivalPlanActualLineChartComponent } from '../../parts/graph/arrival-plan-actual-line-chart';
 import { arrivalPlans, arrivalActuals } from '../../../model/mock';
@@ -10,7 +10,7 @@ import { SearchFieldConfig, SearchFieldType, SearchFormValue } from '../../../mo
   templateUrl: './arrival.html',
   styleUrl: './arrival.scss',
 })
-export class ArrivalComponent {
+export class ArrivalComponent implements AfterViewInit {
   arrivalPlans = arrivalPlans;
   arrivalActuals = arrivalActuals;
 
@@ -46,6 +46,10 @@ export class ArrivalComponent {
       placeholder: '50',
     },
   ];
+
+  ngAfterViewInit(): void {
+    console.log("予定：", arrivalPlans);
+  }  
 
   /**
    * 検索を実行

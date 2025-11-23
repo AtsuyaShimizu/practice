@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, input, signal } from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { ArrivalPlan, ArrivalActual } from '../../../model/domain';
 import { LineChartModel } from '../../../model/graph';
 import { mapArrivalToLineChart } from '../../../mapper';
@@ -9,54 +9,26 @@ import { mapArrivalToLineChart } from '../../../mapper';
   templateUrl: './arrival-plan-actual-line-chart.html',
   styleUrl: './arrival-plan-actual-line-chart.scss',
 })
-export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ArrivalPlanActualLineChartComponent implements OnInit {
   plans = input.required<ArrivalPlan[]>();
   actuals = input.required<ArrivalActual[]>();
-  title = input<string>('入荷予実推移');
+  title = input<string>('入荷予実推移（1時間単位）');
 
   chartData: LineChartModel | null = null;
-  viewBox = '0 0 800 300';
 
-  // SVGの実際のサイズを保持
-  svgWidth = signal<number>(800);
-  svgHeight = signal<number>(300);
-
-  // グラフの描画領域の設定
-  readonly margin = { top: 30, right: 120, bottom: 50, left: 60 };
+  // SVGのサイズ設定
   readonly width = 800;
   readonly height = 300;
-  readonly chartWidth = this.width - this.margin.left - this.margin.right;
-  readonly chartHeight = this.height - this.margin.top - this.margin.bottom;
-
-  private resizeHandler: () => void;
-
-  constructor(private elementRef: ElementRef) {
-    this.resizeHandler = () => this.updateSvgSize();
-  }
+  readonly padding = { top: 20, right: 20, bottom: 40, left: 50 };
+  readonly chartWidth = this.width - this.padding.left - this.padding.right;
+  readonly chartHeight = this.height - this.padding.top - this.padding.bottom;
 
   ngOnInit(): void {
     this.updateChart();
   }
 
-  ngAfterViewInit(): void {
-    this.updateSvgSize();
-    window.addEventListener('resize', this.resizeHandler);
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.resizeHandler);
-  }
-
   ngOnChanges(): void {
     this.updateChart();
-  }
-
-  private updateSvgSize(): void {
-    const svgElement = this.elementRef.nativeElement.querySelector('svg');
-    if (svgElement) {
-      this.svgWidth.set(svgElement.clientWidth);
-      this.svgHeight.set(svgElement.clientHeight);
-    }
   }
 
   private updateChart(): void {
@@ -67,40 +39,80 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
       this.chartData = mapArrivalToLineChart(plans, actuals, {
         title: this.title(),
       });
+
+      console.log("変換後：", this.chartData);
     }
   }
 
   /**
-   * データポイントをSVG座標に変換
+   * 全系列のY値の最小値と最大値を取得
    */
-  getDataPoints(seriesIndex: number): string {
+  private getYRange(): { min: number; max: number } {
+    if (!this.chartData || this.chartData.series.length === 0) {
+      return { min: 0, max: 100 };
+    }
+
+    const allValues = this.chartData.series.flatMap(s => s.data.map(d => d.y));
+    const min = Math.min(...allValues, 0);
+    const max = Math.max(...allValues, 100);
+
+    // 余白を追加
+    const range = max - min;
+    return {
+      min: min - range * 0.1,
+      max: max + range * 0.1,
+    };
+  }
+
+  /**
+   * X軸の時間範囲を取得（1日分、24時間）
+   */
+  private getTimeRange(): { start: Date; end: Date } {
+    if (!this.chartData || this.chartData.series.length === 0 || this.chartData.series[0].data.length === 0) {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      return { start, end };
+    }
+
+    // データの最初の日付を基準に1日分の範囲を設定
+    const firstDate = new Date(this.chartData.series[0].data[0].x as string);
+    const start = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), 0, 0, 0);
+    const end = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), 23, 59, 59);
+    return { start, end };
+  }
+
+  /**
+   * 時刻をX座標に変換
+   */
+  private timeToX(time: Date): number {
+    const { start, end } = this.getTimeRange();
+    const totalMs = end.getTime() - start.getTime();
+    const currentMs = time.getTime() - start.getTime();
+    return (currentMs / totalMs) * this.chartWidth;
+  }
+
+  /**
+   * Y値をY座標に変換
+   */
+  private valueToY(value: number): number {
+    const { min, max } = this.getYRange();
+    const range = max - min || 1;
+    return this.chartHeight - ((value - min) / range) * this.chartHeight;
+  }
+
+  /**
+   * 線のポイント文字列を生成
+   */
+  getLinePoints(seriesIndex: number): string {
     if (!this.chartData || !this.chartData.series[seriesIndex]) {
       return '';
     }
 
     const series = this.chartData.series[seriesIndex];
-    const data = series.data;
-
-    if (data.length === 0) {
-      return '';
-    }
-
-    // X軸の範囲を計算
-    const xValues = data.map(d => new Date(d.x as string).getTime());
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const xRange = maxX - minX || 1;
-
-    // Y軸の範囲を計算（全シリーズの最大値を使用）
-    const allYValues = this.chartData.series.flatMap(s => s.data.map(d => d.y));
-    const maxY = Math.max(...allYValues);
-    const minY = Math.min(...allYValues, 0);
-    const yRange = maxY - minY || 1;
-
-    // データポイントをSVG座標に変換
-    const points = data.map(point => {
-      const x = ((new Date(point.x as string).getTime() - minX) / xRange) * this.chartWidth;
-      const y = this.chartHeight - ((point.y - minY) / yRange) * this.chartHeight;
+    const points = series.data.map(d => {
+      const x = this.timeToX(new Date(d.x as string));
+      const y = this.valueToY(d.y);
       return `${x},${y}`;
     });
 
@@ -108,117 +120,7 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
   }
 
   /**
-   * 個別のポイント座標を取得（円を描画するため）
-   */
-  getPointCoordinates(seriesIndex: number): Array<{ x: number; y: number; value: number }> {
-    if (!this.chartData || !this.chartData.series[seriesIndex]) {
-      return [];
-    }
-
-    const series = this.chartData.series[seriesIndex];
-    const data = series.data;
-
-    if (data.length === 0) {
-      return [];
-    }
-
-    const xValues = data.map(d => new Date(d.x as string).getTime());
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const xRange = maxX - minX || 1;
-
-    const allYValues = this.chartData.series.flatMap(s => s.data.map(d => d.y));
-    const maxY = Math.max(...allYValues);
-    const minY = Math.min(...allYValues, 0);
-    const yRange = maxY - minY || 1;
-
-    return data.map(point => ({
-      x: ((new Date(point.x as string).getTime() - minX) / xRange) * this.chartWidth,
-      y: this.chartHeight - ((point.y - minY) / yRange) * this.chartHeight,
-      value: point.y,
-    }));
-  }
-
-  /**
-   * X軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
-   */
-  getXAxisLabels(): Array<{ x: number; label: string; pixelX: number }> {
-    if (!this.chartData || this.chartData.series.length === 0) {
-      return [];
-    }
-
-    const firstSeries = this.chartData.series[0];
-    const data = firstSeries.data;
-
-    if (data.length === 0) {
-      return [];
-    }
-
-    const xValues = data.map(d => new Date(d.x as string).getTime());
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const xRange = maxX - minX || 1;
-
-    const scaleX = this.svgWidth() / this.width;
-    const scaleY = this.svgHeight() / this.height;
-
-    return data.map(point => {
-      const x = ((new Date(point.x as string).getTime() - minX) / xRange) * this.chartWidth;
-      const pixelX = (x + this.margin.left) * scaleX;
-      const date = new Date(point.x as string);
-      const label = `${date.getMonth() + 1}/${date.getDate()}`;
-      return { x, label, pixelX };
-    });
-  }
-
-  /**
-   * X軸ラベルのY座標（HTML配置用）
-   */
-  getXAxisLabelY(): number {
-    const scaleY = this.svgHeight() / this.height;
-    return (this.chartHeight + this.margin.top + 14) * scaleY;
-  }
-
-  /**
-   * Y軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
-   */
-  getYAxisLabels(): Array<{ y: number; label: string; pixelY: number; pixelX: number }> {
-    if (!this.chartData || this.chartData.series.length === 0) {
-      return [];
-    }
-
-    const allYValues = this.chartData.series.flatMap(s => s.data.map(d => d.y));
-    const maxY = Math.max(...allYValues);
-    const minY = Math.min(...allYValues, 0);
-    const yRange = maxY - minY || 1;
-
-    const labelCount = 5;
-    const step = yRange / (labelCount - 1);
-
-    const scaleX = this.svgWidth() / this.width;
-    const scaleY = this.svgHeight() / this.height;
-
-    // Y軸ラベルの位置を計算（タイトルと被らないように最小値を設定）
-    const marginLeftPixels = this.margin.left * scaleX;
-    const pixelX = Math.max(24, marginLeftPixels - 38);
-
-    return Array.from({ length: labelCount }, (_, i) => {
-      const value = minY + step * i;
-      const y = this.chartHeight - ((value - minY) / yRange) * this.chartHeight;
-      const pixelY = (y + this.margin.top) * scaleY;
-      return { y, label: Math.round(value).toString(), pixelY, pixelX };
-    });
-  }
-
-  /**
-   * グリッド線のY座標を取得
-   */
-  getGridLines(): number[] {
-    return this.getYAxisLabels().map(label => label.y);
-  }
-
-  /**
-   * エリアチャート用のパスを生成（線の下を塗りつぶす）
+   * エリアのパスを生成
    */
   getAreaPath(seriesIndex: number): string {
     if (!this.chartData || !this.chartData.series[seriesIndex]) {
@@ -226,39 +128,18 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
     }
 
     const series = this.chartData.series[seriesIndex];
-    const data = series.data;
+    if (series.data.length === 0) return '';
 
-    if (data.length === 0) {
-      return '';
-    }
-
-    const xValues = data.map(d => new Date(d.x as string).getTime());
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const xRange = maxX - minX || 1;
-
-    const allYValues = this.chartData.series.flatMap(s => s.data.map(d => d.y));
-    const maxY = Math.max(...allYValues);
-    const minY = Math.min(...allYValues, 0);
-    const yRange = maxY - minY || 1;
-
-    const points = data.map(point => {
-      const x = ((new Date(point.x as string).getTime() - minX) / xRange) * this.chartWidth;
-      const y = this.chartHeight - ((point.y - minY) / yRange) * this.chartHeight;
+    const points = series.data.map(d => {
+      const x = this.timeToX(new Date(d.x as string));
+      const y = this.valueToY(d.y);
       return { x, y };
     });
 
-    if (points.length === 0) return '';
-
-    // パスの開始
     let path = `M ${points[0].x},${points[0].y}`;
-
-    // 線を描画
     for (let i = 1; i < points.length; i++) {
       path += ` L ${points[i].x},${points[i].y}`;
     }
-
-    // 底辺に戻る
     path += ` L ${points[points.length - 1].x},${this.chartHeight}`;
     path += ` L ${points[0].x},${this.chartHeight}`;
     path += ' Z';
@@ -267,44 +148,90 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
   }
 
   /**
-   * 凡例の位置を計算（HTML配置用）- チャート右上に配置
+   * データポイントの座標を取得
    */
-  getLegendPositions(): Array<{ pixelX: number; pixelY: number }> {
-    if (!this.chartData) return [];
+  getPoints(seriesIndex: number): Array<{ x: number; y: number }> {
+    if (!this.chartData || !this.chartData.series[seriesIndex]) {
+      return [];
+    }
 
-    const scaleX = this.svgWidth() / this.width;
-    const scaleY = this.svgHeight() / this.height;
-    // チャート領域の右端から100px左に配置
-    const baseX = (this.chartWidth + this.margin.left - 100) * scaleX;
-    const baseY = (this.margin.top + 10) * scaleY;
-
-    return this.chartData.series.map((_, i) => ({
-      pixelX: baseX,
-      pixelY: baseY + (i * 26 * scaleY),
+    const series = this.chartData.series[seriesIndex];
+    return series.data.map(d => ({
+      x: this.timeToX(new Date(d.x as string)),
+      y: this.valueToY(d.y),
     }));
   }
 
   /**
-   * X軸タイトルの位置
+   * X軸のメモリ（1時間単位）を取得
    */
-  getXAxisTitlePosition(): { pixelX: number; pixelY: number } {
-    const scaleX = this.svgWidth() / this.width;
-    const scaleY = this.svgHeight() / this.height;
-    return {
-      pixelX: (this.chartWidth / 2 + this.margin.left) * scaleX,
-      pixelY: (this.chartHeight + this.margin.top + 45) * scaleY,
-    };
+  getXAxisTicks(): Array<{ x: number; hour: number }> {
+    const ticks = [];
+    for (let hour = 0; hour <= 24; hour++) {
+      const { start } = this.getTimeRange();
+      const time = new Date(start);
+      time.setHours(hour);
+      const x = this.timeToX(time);
+      ticks.push({ x, hour });
+    }
+    return ticks;
   }
 
   /**
-   * Y軸タイトルの位置
+   * X軸のラベル（4時間単位）を取得
    */
-  getYAxisTitlePosition(): { pixelX: number; pixelY: number } {
-    const scaleX = this.svgWidth() / this.width;
-    const scaleY = this.svgHeight() / this.height;
-    return {
-      pixelX: Math.max(16, (this.margin.left * scaleX) / 2),
-      pixelY: (this.chartHeight / 2 + this.margin.top) * scaleY,
-    };
+  getXAxisLabels(): Array<{ x: number; text: string }> {
+    const labels = [];
+    for (let hour = 0; hour <= 24; hour += 4) {
+      const { start } = this.getTimeRange();
+      const time = new Date(start);
+      time.setHours(hour);
+      const x = this.timeToX(time);
+      const text = `${hour}:00`;
+      labels.push({ x, text });
+    }
+    return labels;
+  }
+
+  /**
+   * Y軸のメモリとラベルを取得
+   */
+  getYAxisTicks(): Array<{ y: number }> {
+    const { min, max } = this.getYRange();
+    const range = max - min;
+    const step = range / 5;
+
+    const ticks = [];
+    for (let i = 0; i <= 5; i++) {
+      const value = min + step * i;
+      const y = this.valueToY(value);
+      ticks.push({ y });
+    }
+    return ticks;
+  }
+
+  /**
+   * Y軸のラベルを取得
+   */
+  getYAxisLabels(): Array<{ y: number; text: string }> {
+    const { min, max } = this.getYRange();
+    const range = max - min;
+    const step = range / 5;
+
+    const labels = [];
+    for (let i = 0; i <= 5; i++) {
+      const value = min + step * i;
+      const y = this.valueToY(value);
+      const text = Math.round(value).toString();
+      labels.push({ y, text });
+    }
+    return labels;
+  }
+
+  /**
+   * 水平グリッド線のY座標を取得
+   */
+  getHorizontalGridLines(): number[] {
+    return this.getYAxisTicks().map(tick => tick.y);
   }
 }
