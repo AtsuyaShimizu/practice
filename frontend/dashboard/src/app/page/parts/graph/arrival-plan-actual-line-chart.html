@@ -1,0 +1,220 @@
+@if (chartData) {
+  <div class="chart-container">
+    <h3 class="chart-title">{{ chartData.config?.title }}</h3>
+
+    <svg [attr.viewBox]="viewBox" class="line-chart" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- グラデーション定義 -->
+        <linearGradient id="planGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0.05" />
+        </linearGradient>
+        <linearGradient id="actualGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#F472B6;stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:#F472B6;stop-opacity:0.05" />
+        </linearGradient>
+
+        <!-- ドロップシャドウ -->
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.3"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- グラフエリア全体のグループ -->
+      <g [attr.transform]="'translate(' + margin.left + ',' + margin.top + ')'">
+
+        <!-- グリッド線 -->
+        @if (chartData.config?.showGrid) {
+          <g class="grid">
+            @for (y of getGridLines(); track y) {
+              <line
+                [attr.x1]="0"
+                [attr.y1]="y"
+                [attr.x2]="chartWidth"
+                [attr.y2]="y"
+                class="grid-line"
+              />
+            }
+          </g>
+        }
+
+        <!-- X軸 -->
+        <g class="x-axis">
+          <line
+            [attr.x1]="0"
+            [attr.y1]="chartHeight"
+            [attr.x2]="chartWidth"
+            [attr.y2]="chartHeight"
+            class="axis-line"
+          />
+          @for (label of getXAxisLabels(); track label.x) {
+            <g class="x-label">
+              <line
+                [attr.x1]="label.x"
+                [attr.y1]="chartHeight"
+                [attr.x2]="label.x"
+                [attr.y2]="chartHeight + 5"
+                class="tick"
+              />
+              <text
+                [attr.x]="label.x"
+                [attr.y]="chartHeight + 20"
+                class="label-text"
+              >
+                {{ label.label }}
+              </text>
+            </g>
+          }
+          <text
+            [attr.x]="chartWidth / 2"
+            [attr.y]="chartHeight + 45"
+            class="axis-label"
+          >
+            {{ chartData.config?.xAxisLabel }}
+          </text>
+        </g>
+
+        <!-- Y軸 -->
+        <g class="y-axis">
+          <line
+            [attr.x1]="0"
+            [attr.y1]="0"
+            [attr.x2]="0"
+            [attr.y2]="chartHeight"
+            class="axis-line"
+          />
+          @for (label of getYAxisLabels(); track label.y) {
+            <g class="y-label">
+              <line
+                [attr.x1]="-5"
+                [attr.y1]="label.y"
+                [attr.x2]="0"
+                [attr.y2]="label.y"
+                class="tick"
+              />
+              <text
+                [attr.x]="-10"
+                [attr.y]="label.y + 4"
+                class="label-text"
+              >
+                {{ label.label }}
+              </text>
+            </g>
+          }
+          <text
+            [attr.x]="-35"
+            [attr.y]="chartHeight / 2"
+            class="axis-label"
+            [attr.transform]="'rotate(-90, -35, ' + (chartHeight / 2) + ')'"
+          >
+            {{ chartData.config?.yAxisLabel }}
+          </text>
+        </g>
+
+        <!-- 線グラフの描画 -->
+        @for (series of chartData.series; track series.name; let i = $index) {
+          <g class="series">
+            <!-- エリア（グラデーション塗りつぶし） -->
+            <path
+              [attr.d]="getAreaPath(i)"
+              [attr.fill]="i === 0 ? 'url(#planGradient)' : 'url(#actualGradient)'"
+              opacity="0.4"
+            />
+
+            <!-- 線 -->
+            <polyline
+              [attr.points]="getDataPoints(i)"
+              [attr.stroke]="series.color"
+              [attr.stroke-width]="series.lineWidth || 2"
+              [attr.stroke-dasharray]="series.dashed ? '5,5' : 'none'"
+              fill="none"
+              class="line"
+            />
+
+            <!-- データポイント -->
+            @if (series.showPoints) {
+              <g>
+                @for (point of getPointCoordinates(i); track point.x + '-' + point.y) {
+                  <circle
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    r="5"
+                    [attr.fill]="series.color"
+                    stroke="#2a2a2a"
+                    stroke-width="2"
+                    class="data-point"
+                  >
+                    <title>{{ series.name }}: {{ point.value }}</title>
+                  </circle>
+                }
+              </g>
+            }
+          </g>
+        }
+
+        <!-- 凡例 -->
+        @if (chartData.config?.showLegend) {
+          <g class="legend" [attr.transform]="'translate(' + (chartWidth + 20) + ', 10)'">
+            @for (series of chartData.series; track series.name; let i = $index) {
+              <g [attr.transform]="'translate(0, ' + (i * 30) + ')'">
+                <!-- 背景 -->
+                <rect
+                  x="-5"
+                  y="-2"
+                  width="90"
+                  height="22"
+                  fill="#1e1e1e"
+                  stroke="#3d3d3d"
+                  stroke-width="1"
+                  rx="4"
+                  opacity="0.6"
+                />
+                <!-- 線のサンプル -->
+                <line
+                  x1="5"
+                  y1="9"
+                  x2="28"
+                  y2="9"
+                  [attr.stroke]="series.color"
+                  [attr.stroke-width]="2.5"
+                />
+                <!-- ポイントのサンプル -->
+                <circle
+                  cx="16.5"
+                  cy="9"
+                  r="4"
+                  [attr.fill]="series.color"
+                  stroke="#2a2a2a"
+                  stroke-width="2"
+                />
+                <!-- ラベル -->
+                <text
+                  x="35"
+                  y="13"
+                  class="legend-text"
+                >
+                  {{ series.name }}
+                </text>
+              </g>
+            }
+          </g>
+        }
+
+      </g>
+    </svg>
+  </div>
+}
+
+@if (!chartData) {
+  <div class="no-data">
+    データがありません
+  </div>
+}

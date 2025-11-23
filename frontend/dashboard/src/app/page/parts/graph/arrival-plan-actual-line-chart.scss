@@ -1,0 +1,127 @@
+.chart-container {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border: 1px solid #3d3d3d;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.chart-title {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f5f5f5;
+  text-align: center;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 300px;
+  max-width: 100%;
+
+  .axis-line {
+    stroke: #5a5a5a;
+    stroke-width: 2;
+  }
+
+  .tick {
+    stroke: #5a5a5a;
+    stroke-width: 1;
+  }
+
+  .label-text {
+    fill: #b0b0b0;
+    font-size: 11px;
+    text-anchor: middle;
+  }
+
+  .y-label .label-text {
+    text-anchor: end;
+  }
+
+  .axis-label {
+    fill: #d0d0d0;
+    font-size: 13px;
+    font-weight: 500;
+    text-anchor: middle;
+  }
+
+  .grid-line {
+    stroke: #3a3a3a;
+    stroke-width: 1;
+    stroke-dasharray: 3, 3;
+    opacity: 0.6;
+  }
+
+  .line {
+    transition: stroke-width 0.2s ease, filter 0.2s ease;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+
+    &:hover {
+      stroke-width: 3 !important;
+      cursor: pointer;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+    }
+  }
+
+  .data-point {
+    transition: r 0.2s ease, filter 0.2s ease;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+
+    &:hover {
+      r: 6;
+      cursor: pointer;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+    }
+  }
+
+  .legend-text {
+    fill: #e0e0e0;
+    font-size: 12px;
+    text-anchor: start;
+  }
+}
+
+.no-data {
+  padding: 48px;
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-radius: 12px;
+  border: 1px dashed #3d3d3d;
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 12px;
+  }
+
+  .chart-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .line-chart {
+    height: 250px;
+
+    .label-text {
+      font-size: 10px;
+    }
+
+    .axis-label {
+      font-size: 12px;
+    }
+
+    .legend-text {
+      font-size: 11px;
+    }
+  }
+}

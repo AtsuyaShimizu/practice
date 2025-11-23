@@ -1,3 +1,12 @@
-<app-board [title]="title">
-  <p>入荷予実ページの内容がここに表示されます。</p>
+<app-board
+  [searchFields]="searchFields"
+  [searchTitle]="'入荷予実 検索条件'"
+  (onSearch)="handleSearch($event)"
+  (onClear)="handleClear()">
+  <div class="arrival-content">
+    <app-arrival-plan-actual-line-chart
+      [plans]="arrivalPlans"
+      [actuals]="arrivalActuals"
+    />
+  </div>
 </app-board>

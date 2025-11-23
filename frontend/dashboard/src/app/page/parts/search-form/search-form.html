@@ -1,0 +1,110 @@
+<div class="search-form-container">
+  <!-- Accordion Header -->
+  <div class="accordion-header" (click)="toggleAccordion()">
+    <div class="header-content">
+      <span class="header-icon" [class.expanded]="isExpanded()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <h3 class="header-title">{{ title() }}</h3>
+    </div>
+  </div>
+
+  <!-- Accordion Content -->
+  @if (isExpanded()) {
+    <div class="accordion-content">
+      <div class="search-fields">
+        @for (field of fields(); track field.key) {
+          <div class="field-group">
+            <label class="field-label">{{ field.label }}</label>
+
+            <!-- Text Input -->
+            @if (field.type === SearchFieldType.Text) {
+              <input
+                type="text"
+                class="field-input"
+                [placeholder]="field.placeholder || ''"
+                [value]="formValue()[field.key]"
+                (input)="updateValue(field.key, $any($event.target).value)"
+              />
+            }
+
+            <!-- Number Input -->
+            @if (field.type === SearchFieldType.Number) {
+              <input
+                type="number"
+                class="field-input"
+                [placeholder]="field.placeholder || ''"
+                [value]="formValue()[field.key]"
+                (input)="updateValue(field.key, $any($event.target).value)"
+              />
+            }
+
+            <!-- Date Input -->
+            @if (field.type === SearchFieldType.Date) {
+              <input
+                type="date"
+                class="field-input"
+                [value]="formValue()[field.key]"
+                (input)="updateValue(field.key, $any($event.target).value)"
+              />
+            }
+
+            <!-- Date Range Input -->
+            @if (field.type === SearchFieldType.DateRange) {
+              <div class="date-range-group">
+                <input
+                  type="date"
+                  class="field-input date-range-input"
+                  placeholder="開始日"
+                  [value]="formValue()[getDateRangeKeys(field.key).from]"
+                  (input)="updateValue(getDateRangeKeys(field.key).from, $any($event.target).value)"
+                />
+                <span class="date-range-separator">〜</span>
+                <input
+                  type="date"
+                  class="field-input date-range-input"
+                  placeholder="終了日"
+                  [value]="formValue()[getDateRangeKeys(field.key).to]"
+                  (input)="updateValue(getDateRangeKeys(field.key).to, $any($event.target).value)"
+                />
+              </div>
+            }
+
+            <!-- Select Input -->
+            @if (field.type === SearchFieldType.Select) {
+              <select
+                class="field-input"
+                [value]="formValue()[field.key]"
+                (change)="updateValue(field.key, $any($event.target).value)"
+              >
+                <option value="">{{ field.placeholder || '選択してください' }}</option>
+                @for (option of field.options; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-clear" (click)="handleClear()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          クリア
+        </button>
+        <button class="btn btn-search" (click)="handleSearch()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 10L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          適用
+        </button>
+      </div>
+    </div>
+  }
+</div>
