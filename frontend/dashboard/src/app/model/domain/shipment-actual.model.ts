@@ -12,7 +12,6 @@ export interface ShipmentActual {
   huInfo: HandlingUnitInfo;
   quantity: number;
   district: string;
-  shipmentDate: string;
-  shippedAt: string;
+  actualShipmentDateTime: string;
   customerId: string;
 }

@@ -9,5 +9,5 @@ export interface ArrivalPlan {
   skuInfo: SkuInfo;
   huInfo: HandlingUnitInfo;
   quantity: number;
-  arrivalDate: string;
+  arrivalDateTime: string;
 }

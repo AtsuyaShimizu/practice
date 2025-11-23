@@ -11,6 +11,6 @@ export interface ShipmentPlan {
   huInfo: HandlingUnitInfo;
   quantity: number;
   district: string;
-  shipmentDate: string;
+  shipmentDateTime: string;
   customerId: string;
 }

@@ -10,6 +10,6 @@ export interface ArrivalActual {
   skuInfo: SkuInfo;
   huInfo: HandlingUnitInfo;
   quantity: number;
-  actualArrivalDate: string;
+  actualArrivalDateTime: string;
   recordedAt?: string;
 }

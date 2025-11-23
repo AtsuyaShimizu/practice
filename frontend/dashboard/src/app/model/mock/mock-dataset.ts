@@ -1,12 +1,29 @@
-import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo} from '../domain/index';
+import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo } from '../domain/index';
 
-const formatDate = (daysAgo: number): string => {
+const formatDateTime = (daysAgo: number, hour: number, minute: number): string => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
-  return date.toISOString().slice(0, 10);
+  date.setHours(hour, minute, 0, 0);
+  return date.toISOString();
 };
 
-const dateBuckets = [0, 1, 2].map(formatDate);
+const shiftMinutes = (isoDateTime: string, minutes: number): string => {
+  const date = new Date(isoDateTime);
+  date.setMinutes(date.getMinutes() + minutes);
+  return date.toISOString();
+};
+
+const arrivalScheduleSlots = [
+  { daysAgo: 0, hour: 9, minute: 30 },
+  { daysAgo: 1, hour: 11, minute: 0 },
+  { daysAgo: 2, hour: 14, minute: 15 },
+];
+
+const shipmentScheduleSlots = [
+  { daysAgo: 0, hour: 16, minute: 10 },
+  { daysAgo: 1, hour: 13, minute: 45 },
+  { daysAgo: 2, hour: 10, minute: 20 },
+];
 
 const pad = (value: number, length = 3): string => value.toString().padStart(length, '0');
 
@@ -56,6 +73,9 @@ export const arrivalPlans: ArrivalPlan[] = Array.from({ length: 100 }, (_, index
   const sku = skuCatalog[index % skuCatalog.length];
   const huInfo = handlingUnits[index % handlingUnits.length];
   const plannedQuantity = 50 + (index % 7) * 5;
+  const schedule = arrivalScheduleSlots[index % arrivalScheduleSlots.length];
+  const baseArrivalDateTime = formatDateTime(schedule.daysAgo, schedule.hour, schedule.minute);
+  const arrivalDateTime = shiftMinutes(baseArrivalDateTime, (index % 3) * 10 - 5);
 
   return {
     id: `APL-${pad(index + 1)}`,
@@ -64,13 +84,15 @@ export const arrivalPlans: ArrivalPlan[] = Array.from({ length: 100 }, (_, index
     skuInfo: sku,
     huInfo,
     quantity: plannedQuantity,
-    arrivalDate: dateBuckets[index % dateBuckets.length],
+    arrivalDateTime,
   };
 });
 
 export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) => {
   const variance = (index % 5) - 2;
   const actualQuantity = Math.max(1, plan.quantity + variance);
+  const actualArrivalDateTime = shiftMinutes(plan.arrivalDateTime, variance * 12);
+  const recordedAt = shiftMinutes(actualArrivalDateTime, 15 + (index % 4) * 3);
 
   return {
     id: `AAC-${pad(index + 1)}`,
@@ -80,8 +102,8 @@ export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) =>
     skuInfo: plan.skuInfo,
     huInfo: plan.huInfo,
     quantity: actualQuantity,
-    actualArrivalDate: plan.arrivalDate,
-    recordedAt: `${plan.arrivalDate}T0${(index % 9) + 1}:15:00Z`,
+    actualArrivalDateTime,
+    recordedAt,
   };
 });
 
@@ -93,6 +115,9 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
   const sku = skuCatalog[(index * 2) % skuCatalog.length];
   const huInfo = handlingUnits[(index * 5) % handlingUnits.length];
   const plannedQuantity = 30 + (index % 6) * 4;
+  const schedule = shipmentScheduleSlots[index % shipmentScheduleSlots.length];
+  const baseShipmentDateTime = formatDateTime(schedule.daysAgo, schedule.hour, schedule.minute);
+  const shipmentDateTime = shiftMinutes(baseShipmentDateTime, (index % 4) * 7 - 10);
 
   return {
     id: `SPL-${pad(index + 1)}`,
@@ -103,7 +128,7 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
     huInfo,
     quantity: plannedQuantity,
     district: districts[index % districts.length],
-    shipmentDate: dateBuckets[index % dateBuckets.length],
+    shipmentDateTime,
     customerId: customerIds[index % customerIds.length],
   };
 });
@@ -111,6 +136,7 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
 export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index) => {
   const variance = (index % 7) - 3;
   const actualQuantity = Math.max(1, plan.quantity + variance);
+  const actualShipmentDateTime = shiftMinutes(plan.shipmentDateTime, variance * 9);
 
   return {
     id: `SAC-${pad(index + 1)}`,
@@ -122,8 +148,7 @@ export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index)
     huInfo: plan.huInfo,
     quantity: actualQuantity,
     district: plan.district,
-    shipmentDate: plan.shipmentDate,
-    shippedAt: `${plan.shipmentDate}T1${(index % 8)}:45:00Z`,
+    actualShipmentDateTime,
     customerId: plan.customerId,
   };
 });
