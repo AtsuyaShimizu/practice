@@ -174,7 +174,7 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
   /**
    * Y軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
    */
-  getYAxisLabels(): Array<{ y: number; label: string; pixelY: number }> {
+  getYAxisLabels(): Array<{ y: number; label: string; pixelY: number; pixelX: number }> {
     if (!this.chartData || this.chartData.series.length === 0) {
       return [];
     }
@@ -190,11 +190,15 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
     const scaleX = this.svgWidth() / this.width;
     const scaleY = this.svgHeight() / this.height;
 
+    // Y軸ラベルの位置を計算（タイトルと被らないように最小値を設定）
+    const marginLeftPixels = this.margin.left * scaleX;
+    const pixelX = Math.max(24, marginLeftPixels - 38);
+
     return Array.from({ length: labelCount }, (_, i) => {
       const value = minY + step * i;
       const y = this.chartHeight - ((value - minY) / yRange) * this.chartHeight;
       const pixelY = (y + this.margin.top) * scaleY;
-      return { y, label: Math.round(value).toString(), pixelY };
+      return { y, label: Math.round(value).toString(), pixelY, pixelX };
     });
   }
 
@@ -255,19 +259,20 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
   }
 
   /**
-   * 凡例の位置を計算（HTML配置用）
+   * 凡例の位置を計算（HTML配置用）- チャート右上に配置
    */
   getLegendPositions(): Array<{ pixelX: number; pixelY: number }> {
     if (!this.chartData) return [];
 
     const scaleX = this.svgWidth() / this.width;
     const scaleY = this.svgHeight() / this.height;
-    const baseX = (this.chartWidth + this.margin.left + 20) * scaleX;
+    // チャート領域の右端から100px左に配置
+    const baseX = (this.chartWidth + this.margin.left - 100) * scaleX;
     const baseY = (this.margin.top + 10) * scaleY;
 
     return this.chartData.series.map((_, i) => ({
       pixelX: baseX,
-      pixelY: baseY + (i * 30 * scaleY),
+      pixelY: baseY + (i * 26 * scaleY),
     }));
   }
 
@@ -287,10 +292,9 @@ export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewIni
    * Y軸タイトルの位置
    */
   getYAxisTitlePosition(): { pixelX: number; pixelY: number } {
-    const scaleX = this.svgWidth() / this.width;
     const scaleY = this.svgHeight() / this.height;
     return {
-      pixelX: 15 * scaleX,
+      pixelX: 6,
       pixelY: (this.chartHeight / 2 + this.margin.top) * scaleY,
     };
   }

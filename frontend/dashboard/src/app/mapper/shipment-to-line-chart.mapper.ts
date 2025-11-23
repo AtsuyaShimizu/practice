@@ -108,6 +108,8 @@ export function mapShipmentToLineChart(
       showLegend: true,
       showGrid: true,
       animation: true,
+      showXAxisLabel: false,
+      showYAxisLabel: true,
     },
   };
 }

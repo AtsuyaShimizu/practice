@@ -30,6 +30,8 @@ export interface LineChartConfig {
   animation?: boolean;
   height?: number;
   width?: number;
+  showXAxisLabel?: boolean;
+  showYAxisLabel?: boolean;
 }
 
 /**
