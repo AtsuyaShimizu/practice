@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, input, signal } from '@angular/core';
 import { ArrivalPlan, ArrivalActual } from '../../../model/domain';
 import { LineChartModel } from '../../../model/graph';
 import { mapArrivalToLineChart } from '../../../mapper';
@@ -9,13 +9,17 @@ import { mapArrivalToLineChart } from '../../../mapper';
   templateUrl: './arrival-plan-actual-line-chart.html',
   styleUrl: './arrival-plan-actual-line-chart.scss',
 })
-export class ArrivalPlanActualLineChartComponent implements OnInit {
+export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewInit, OnDestroy {
   plans = input.required<ArrivalPlan[]>();
   actuals = input.required<ArrivalActual[]>();
   title = input<string>('入荷予実推移');
 
   chartData: LineChartModel | null = null;
   viewBox = '0 0 800 300';
+
+  // SVGの実際のサイズを保持
+  svgWidth = signal<number>(800);
+  svgHeight = signal<number>(300);
 
   // グラフの描画領域の設定
   readonly margin = { top: 30, right: 120, bottom: 50, left: 60 };
@@ -24,12 +28,35 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
   readonly chartWidth = this.width - this.margin.left - this.margin.right;
   readonly chartHeight = this.height - this.margin.top - this.margin.bottom;
 
+  private resizeHandler: () => void;
+
+  constructor(private elementRef: ElementRef) {
+    this.resizeHandler = () => this.updateSvgSize();
+  }
+
   ngOnInit(): void {
     this.updateChart();
   }
 
+  ngAfterViewInit(): void {
+    this.updateSvgSize();
+    window.addEventListener('resize', this.resizeHandler);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.resizeHandler);
+  }
+
   ngOnChanges(): void {
     this.updateChart();
+  }
+
+  private updateSvgSize(): void {
+    const svgElement = this.elementRef.nativeElement.querySelector('svg');
+    if (svgElement) {
+      this.svgWidth.set(svgElement.clientWidth);
+      this.svgHeight.set(svgElement.clientHeight);
+    }
   }
 
   private updateChart(): void {
@@ -113,9 +140,9 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
   }
 
   /**
-   * X軸のラベルを生成
+   * X軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
    */
-  getXAxisLabels(): Array<{ x: number; label: string }> {
+  getXAxisLabels(): Array<{ x: number; label: string; pixelX: number }> {
     if (!this.chartData || this.chartData.series.length === 0) {
       return [];
     }
@@ -132,18 +159,22 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
     const maxX = Math.max(...xValues);
     const xRange = maxX - minX || 1;
 
+    const scaleX = this.svgWidth() / this.width;
+    const scaleY = this.svgHeight() / this.height;
+
     return data.map(point => {
       const x = ((new Date(point.x as string).getTime() - minX) / xRange) * this.chartWidth;
+      const pixelX = (x + this.margin.left) * scaleX;
       const date = new Date(point.x as string);
       const label = `${date.getMonth() + 1}/${date.getDate()}`;
-      return { x, label };
+      return { x, label, pixelX };
     });
   }
 
   /**
-   * Y軸のラベルを生成
+   * Y軸のラベルを生成（HTML配置用に実際のピクセル座標を返す）
    */
-  getYAxisLabels(): Array<{ y: number; label: string }> {
+  getYAxisLabels(): Array<{ y: number; label: string; pixelY: number }> {
     if (!this.chartData || this.chartData.series.length === 0) {
       return [];
     }
@@ -156,10 +187,14 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
     const labelCount = 5;
     const step = yRange / (labelCount - 1);
 
+    const scaleX = this.svgWidth() / this.width;
+    const scaleY = this.svgHeight() / this.height;
+
     return Array.from({ length: labelCount }, (_, i) => {
       const value = minY + step * i;
       const y = this.chartHeight - ((value - minY) / yRange) * this.chartHeight;
-      return { y, label: Math.round(value).toString() };
+      const pixelY = (y + this.margin.top) * scaleY;
+      return { y, label: Math.round(value).toString(), pixelY };
     });
   }
 
@@ -217,5 +252,46 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
     path += ' Z';
 
     return path;
+  }
+
+  /**
+   * 凡例の位置を計算（HTML配置用）
+   */
+  getLegendPositions(): Array<{ pixelX: number; pixelY: number }> {
+    if (!this.chartData) return [];
+
+    const scaleX = this.svgWidth() / this.width;
+    const scaleY = this.svgHeight() / this.height;
+    const baseX = (this.chartWidth + this.margin.left + 20) * scaleX;
+    const baseY = (this.margin.top + 10) * scaleY;
+
+    return this.chartData.series.map((_, i) => ({
+      pixelX: baseX,
+      pixelY: baseY + (i * 30 * scaleY),
+    }));
+  }
+
+  /**
+   * X軸タイトルの位置
+   */
+  getXAxisTitlePosition(): { pixelX: number; pixelY: number } {
+    const scaleX = this.svgWidth() / this.width;
+    const scaleY = this.svgHeight() / this.height;
+    return {
+      pixelX: (this.chartWidth / 2 + this.margin.left) * scaleX,
+      pixelY: (this.chartHeight + this.margin.top + 45) * scaleY,
+    };
+  }
+
+  /**
+   * Y軸タイトルの位置
+   */
+  getYAxisTitlePosition(): { pixelX: number; pixelY: number } {
+    const scaleX = this.svgWidth() / this.width;
+    const scaleY = this.svgHeight() / this.height;
+    return {
+      pixelX: 15 * scaleX,
+      pixelY: (this.chartHeight / 2 + this.margin.top) * scaleY,
+    };
   }
 }

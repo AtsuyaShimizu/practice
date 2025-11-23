@@ -11,6 +11,13 @@ interface DateAggregation {
 }
 
 /**
+ * 日時文字列から日付部分のみを抽出
+ */
+function extractDate(dateTime: string): string {
+  return dateTime.split('T')[0];
+}
+
+/**
  * 出荷予定と実績データを日付ごとに集計する
  */
 function aggregateByDate(
@@ -21,24 +28,26 @@ function aggregateByDate(
 
   // 予定データを集計
   plans.forEach(plan => {
-    const existing = dateMap.get(plan.shipmentDate) || {
-      date: plan.shipmentDate,
+    const date = extractDate(plan.shipmentDateTime);
+    const existing = dateMap.get(date) || {
+      date,
       planTotal: 0,
       actualTotal: 0,
     };
     existing.planTotal += plan.quantity;
-    dateMap.set(plan.shipmentDate, existing);
+    dateMap.set(date, existing);
   });
 
   // 実績データを集計
   actuals.forEach(actual => {
-    const existing = dateMap.get(actual.shipmentDate) || {
-      date: actual.shipmentDate,
+    const date = extractDate(actual.shipmentDateTime);
+    const existing = dateMap.get(date) || {
+      date,
       planTotal: 0,
       actualTotal: 0,
     };
     existing.actualTotal += actual.quantity;
-    dateMap.set(actual.shipmentDate, existing);
+    dateMap.set(date, existing);
   });
 
   // 日付順にソート
