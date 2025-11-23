@@ -1,10 +1,4 @@
-import { ArrivalActual } from './arrival-actual.model';
-import { ArrivalPlan } from './arrival-plan.model';
-import { HandlingUnitInfo } from './handling-unit.model';
-import { ItemInfo } from './item-info.model';
-import { ShipmentActual } from './shipment-actual.model';
-import { ShipmentPlan } from './shipment-plan.model';
-import { SkuInfo } from './sku-info.model';
+import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo} from '../domain/index';
 
 const formatDate = (daysAgo: number): string => {
   const date = new Date();
