@@ -1,12 +1,29 @@
-import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo} from '../domain/index';
+import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo } from '../domain/index';
 
-const formatDate = (daysAgo: number): string => {
+const formatDateTime = (daysAgo: number, hours: number, minutes = 0): string => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
-  return date.toISOString().slice(0, 10);
+  date.setHours(hours, minutes, 0, 0);
+  return date.toISOString();
 };
 
-const dateBuckets = [0, 1, 2].map(formatDate);
+const adjustMinutes = (isoDate: string, minutes: number): string => {
+  const date = new Date(isoDate);
+  date.setMinutes(date.getMinutes() + minutes);
+  return date.toISOString();
+};
+
+const arrivalScheduleTimes = [
+  formatDateTime(0, 9, 30),
+  formatDateTime(1, 11, 15),
+  formatDateTime(2, 14, 45),
+];
+
+const shipmentScheduleTimes = [
+  formatDateTime(0, 17, 10),
+  formatDateTime(1, 15, 5),
+  formatDateTime(2, 10, 20),
+];
 
 const pad = (value: number, length = 3): string => value.toString().padStart(length, '0');
 
@@ -64,13 +81,14 @@ export const arrivalPlans: ArrivalPlan[] = Array.from({ length: 100 }, (_, index
     skuInfo: sku,
     huInfo,
     quantity: plannedQuantity,
-    arrivalDate: dateBuckets[index % dateBuckets.length],
+    arrivalDateTime: arrivalScheduleTimes[index % arrivalScheduleTimes.length],
   };
 });
 
 export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) => {
   const variance = (index % 5) - 2;
   const actualQuantity = Math.max(1, plan.quantity + variance);
+  const actualArrivalDateTime = adjustMinutes(plan.arrivalDateTime, ((index % 5) - 2) * 20);
 
   return {
     id: `AAC-${pad(index + 1)}`,
@@ -80,8 +98,8 @@ export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) =>
     skuInfo: plan.skuInfo,
     huInfo: plan.huInfo,
     quantity: actualQuantity,
-    actualArrivalDate: plan.arrivalDate,
-    recordedAt: `${plan.arrivalDate}T0${(index % 9) + 1}:15:00Z`,
+    actualArrivalDateTime,
+    recordedAt: adjustMinutes(actualArrivalDateTime, 15),
   };
 });
 
@@ -103,7 +121,7 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
     huInfo,
     quantity: plannedQuantity,
     district: districts[index % districts.length],
-    shipmentDate: dateBuckets[index % dateBuckets.length],
+    shipmentDateTime: shipmentScheduleTimes[index % shipmentScheduleTimes.length],
     customerId: customerIds[index % customerIds.length],
   };
 });
@@ -111,6 +129,7 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
 export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index) => {
   const variance = (index % 7) - 3;
   const actualQuantity = Math.max(1, plan.quantity + variance);
+  const actualShipmentStart = adjustMinutes(plan.shipmentDateTime, ((index % 7) - 3) * 15);
 
   return {
     id: `SAC-${pad(index + 1)}`,
@@ -122,8 +141,8 @@ export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index)
     huInfo: plan.huInfo,
     quantity: actualQuantity,
     district: plan.district,
-    shipmentDate: plan.shipmentDate,
-    shippedAt: `${plan.shipmentDate}T1${(index % 8)}:45:00Z`,
+    shipmentDateTime: plan.shipmentDateTime,
+    shippedAt: adjustMinutes(actualShipmentStart, 10),
     customerId: plan.customerId,
   };
 });
