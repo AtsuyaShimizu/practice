@@ -13,6 +13,36 @@ const adjustMinutes = (isoDate: string, minutes: number): string => {
   return date.toISOString();
 };
 
+const randomIntInRange = (min: number, max: number): number =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+const nonZeroVariance = (min: number, max: number, fallback = 5): number => {
+  const delta = randomIntInRange(min, max);
+  if (delta !== 0) {
+    return delta;
+  }
+
+  const fallbackDirection = Math.random() < 0.5 ? -1 : 1;
+  return fallbackDirection * Math.abs(fallback);
+};
+
+const introduceQuantityVariance = (
+  base: number,
+  spreadPercent: number,
+  minimumStep = 1,
+): number => {
+  const percentDelta = randomIntInRange(-spreadPercent, spreadPercent);
+  const stepDelta = randomIntInRange(-minimumStep, minimumStep);
+  const delta = Math.round((base * percentDelta) / 100) + stepDelta;
+
+  if (delta !== 0) {
+    return Math.max(1, base + delta);
+  }
+
+  const forcedShift = minimumStep * (percentDelta >= 0 ? 1 : -1);
+  return Math.max(1, base + forcedShift);
+};
+
 const arrivalScheduleTimes = [
   formatDateTime(0, 9, 30),
   formatDateTime(1, 11, 15),
@@ -72,7 +102,7 @@ export const arrivalPlans: ArrivalPlan[] = Array.from({ length: 100 }, (_, index
   const item = itemCatalog[index % itemCatalog.length];
   const sku = skuCatalog[index % skuCatalog.length];
   const huInfo = handlingUnits[index % handlingUnits.length];
-  const plannedQuantity = 50 + (index % 7) * 5;
+  const plannedQuantity = Math.max(20, 50 + (index % 7) * 5 + randomIntInRange(-4, 8));
 
   return {
     id: `APL-${pad(index + 1)}`,
@@ -86,9 +116,9 @@ export const arrivalPlans: ArrivalPlan[] = Array.from({ length: 100 }, (_, index
 });
 
 export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) => {
-  const variance = (index % 5) - 2;
-  const actualQuantity = Math.max(1, plan.quantity + variance);
-  const actualArrivalDateTime = adjustMinutes(plan.arrivalDateTime, ((index % 5) - 2) * 20);
+  const actualQuantity = introduceQuantityVariance(plan.quantity, 12, 2);
+  const arrivalVarianceMinutes = nonZeroVariance(-40, 90, 10);
+  const actualArrivalDateTime = adjustMinutes(plan.arrivalDateTime, arrivalVarianceMinutes);
 
   return {
     id: `AAC-${pad(index + 1)}`,
@@ -99,7 +129,7 @@ export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) =>
     huInfo: plan.huInfo,
     quantity: actualQuantity,
     actualArrivalDateTime,
-    recordedAt: adjustMinutes(actualArrivalDateTime, 15),
+    recordedAt: adjustMinutes(actualArrivalDateTime, randomIntInRange(10, 25)),
   };
 });
 
@@ -110,7 +140,7 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
   const item = itemCatalog[(index * 3) % itemCatalog.length];
   const sku = skuCatalog[(index * 2) % skuCatalog.length];
   const huInfo = handlingUnits[(index * 5) % handlingUnits.length];
-  const plannedQuantity = 30 + (index % 6) * 4;
+  const plannedQuantity = Math.max(10, 30 + (index % 6) * 4 + randomIntInRange(-3, 6));
 
   return {
     id: `SPL-${pad(index + 1)}`,
@@ -127,9 +157,9 @@ export const shipmentPlans: ShipmentPlan[] = Array.from({ length: 100 }, (_, ind
 });
 
 export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index) => {
-  const variance = (index % 7) - 3;
-  const actualQuantity = Math.max(1, plan.quantity + variance);
-  const actualShipmentStart = adjustMinutes(plan.shipmentDateTime, ((index % 7) - 3) * 15);
+  const actualQuantity = introduceQuantityVariance(plan.quantity, 15, 1);
+  const shipmentVarianceMinutes = nonZeroVariance(-30, 80, 12);
+  const actualShipmentStart = adjustMinutes(plan.shipmentDateTime, shipmentVarianceMinutes);
 
   return {
     id: `SAC-${pad(index + 1)}`,
@@ -142,7 +172,7 @@ export const shipmentActuals: ShipmentActual[] = shipmentPlans.map((plan, index)
     quantity: actualQuantity,
     district: plan.district,
     shipmentDateTime: plan.shipmentDateTime,
-    shippedAt: adjustMinutes(actualShipmentStart, 10),
+    shippedAt: adjustMinutes(actualShipmentStart, randomIntInRange(5, 20)),
     customerId: plan.customerId,
   };
 });
