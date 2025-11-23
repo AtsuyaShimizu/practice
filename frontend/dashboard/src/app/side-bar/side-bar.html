@@ -1,0 +1,15 @@
+<div class="sidebar" [class.open]="isOpen()">
+  <div class="sidebar-content">
+    <nav class="navigation">
+      @for (item of navigationItems; track item.path) {
+        <a
+          class="nav-item"
+          [routerLink]="item.path"
+          routerLinkActive="active">
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </div>
+  <div class="sidebar-border" (click)="onToggle()"></div>
+</div>

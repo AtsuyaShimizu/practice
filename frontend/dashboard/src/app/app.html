@@ -1,0 +1,16 @@
+<app-header
+  [isSidebarOpen]="isSidebarOpen()"
+  (toggleSidebar)="toggleSidebar()">
+</app-header>
+
+<app-side-bar
+  [isOpen]="isSidebarOpen()"
+  (toggleSidebar)="toggleSidebar()">
+</app-side-bar>
+
+<main class="main-content" [class.sidebar-open]="isSidebarOpen()">
+  <app-tab-navigation></app-tab-navigation>
+  <div class="content-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+</main>

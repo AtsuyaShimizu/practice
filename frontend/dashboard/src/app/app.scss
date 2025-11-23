@@ -1,0 +1,14 @@
+.main-content {
+  margin-top: 56px;
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+  min-height: calc(100vh - 56px);
+
+  &.sidebar-open {
+    margin-left: 240px;
+  }
+
+  .content-wrapper {
+    padding: 24px;
+  }
+}

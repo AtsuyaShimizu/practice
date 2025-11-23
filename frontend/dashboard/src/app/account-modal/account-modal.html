@@ -1,0 +1,11 @@
+@if (isOpen()) {
+  <div class="dropdown-menu">
+    <div class="dropdown-item" (click)="onSettings()">
+      <span>設定</span>
+    </div>
+    <div class="dropdown-divider"></div>
+    <div class="dropdown-item" (click)="onLogout()">
+      <span>ログアウト</span>
+    </div>
+  </div>
+}
