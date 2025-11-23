@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { ArrivalPlan, ArrivalActual } from '../../../model/domain';
 import { LineChartModel } from '../../../model/graph';
 import { mapArrivalToLineChart } from '../../../mapper';
@@ -9,19 +9,25 @@ import { mapArrivalToLineChart } from '../../../mapper';
   templateUrl: './arrival-plan-actual-line-chart.html',
   styleUrl: './arrival-plan-actual-line-chart.scss',
 })
-export class ArrivalPlanActualLineChartComponent implements OnInit {
+export class ArrivalPlanActualLineChartComponent implements OnInit, AfterViewInit, OnDestroy {
   plans = input.required<ArrivalPlan[]>();
   actuals = input.required<ArrivalActual[]>();
   title = input<string>('入荷予実推移（1時間単位）');
 
+  @ViewChild('chartContainer')
+  private chartContainerRef?: ElementRef<HTMLDivElement>;
+
+  private readonly ngZone = inject(NgZone);
+
   chartData: LineChartModel | null = null;
 
   // SVGのサイズ設定
-  readonly width = 800;
-  readonly height = 300;
+  width = 800;
+  height = 300;
   readonly padding = { top: 20, right: 20, bottom: 40, left: 50 };
-  readonly chartWidth = this.width - this.padding.left - this.padding.right;
-  readonly chartHeight = this.height - this.padding.top - this.padding.bottom;
+  chartWidth = this.width - this.padding.left - this.padding.right;
+  chartHeight = this.height - this.padding.top - this.padding.bottom;
+  private resizeObserver?: ResizeObserver;
 
   ngOnInit(): void {
     this.updateChart();
@@ -29,6 +35,14 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
 
   ngOnChanges(): void {
     this.updateChart();
+  }
+
+  ngAfterViewInit(): void {
+    this.observeContainerResize();
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
   }
 
   private updateChart(): void {
@@ -42,6 +56,30 @@ export class ArrivalPlanActualLineChartComponent implements OnInit {
 
       console.log("変換後：", this.chartData);
     }
+  }
+
+  private observeContainerResize(): void {
+    if (!this.chartContainerRef) return;
+
+    this.resizeObserver = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      this.ngZone.run(() => {
+        const { width, height } = entry.contentRect;
+        this.width = width;
+        this.height = height;
+        this.recalculateChartSize();
+      });
+    });
+
+    this.resizeObserver.observe(this.chartContainerRef.nativeElement);
+    this.recalculateChartSize();
+  }
+
+  private recalculateChartSize(): void {
+    this.chartWidth = Math.max(this.width - this.padding.left - this.padding.right, 0);
+    this.chartHeight = Math.max(this.height - this.padding.top - this.padding.bottom, 0);
   }
 
   /**
