@@ -12,7 +12,7 @@ export interface ShipmentActual {
   huInfo: HandlingUnitInfo;
   quantity: number;
   district: string;
-  shipmentDate: string;
+  shipmentDateTime: string;
   shippedAt: string;
   customerId: string;
 }
