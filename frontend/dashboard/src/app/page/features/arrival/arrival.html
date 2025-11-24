@@ -1,8 +1,4 @@
-<app-board
-  [searchFields]="searchFields"
-  [searchTitle]="'入荷予実 検索条件'"
-  (onSearch)="handleSearch($event)"
-  (onClear)="handleClear()">
+<app-board>
   <div class="arrival-content">
     <app-arrival-plan-actual-line-chart
       [plans]="arrivalPlans"

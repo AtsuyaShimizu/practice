@@ -3,19 +3,19 @@ import { FormsModule } from '@angular/forms';
 import { SearchFieldConfig, SearchFieldType, SearchFormValue } from '../../../model/domain';
 
 @Component({
-  selector: 'app-search-form',
+  selector: 'app-search-modal',
   imports: [FormsModule],
-  templateUrl: './search-form.html',
-  styleUrl: './search-form.scss',
+  templateUrl: './search-modal.html',
+  styleUrl: './search-modal.scss',
 })
-export class SearchFormComponent {
-  fields = input.required<SearchFieldConfig[]>();
+export class SearchModalComponent {
+  fields = input<SearchFieldConfig[]>([]);
   title = input<string>('検索条件');
 
+  onClose = output<void>();
   onSearch = output<SearchFormValue>();
   onClear = output<void>();
 
-  isExpanded = signal(false);
   formValue = signal<SearchFormValue>({});
 
   // SearchFieldTypeをテンプレートで使用できるようにする
@@ -23,6 +23,13 @@ export class SearchFormComponent {
 
   ngOnInit(): void {
     this.initializeFormValue();
+    // モーダルが開いたときにbodyのスクロールを無効化
+    document.body.style.overflow = 'hidden';
+  }
+
+  ngOnDestroy(): void {
+    // モーダルが閉じたときにbodyのスクロールを有効化
+    document.body.style.overflow = '';
   }
 
   ngOnChanges(): void {
@@ -46,10 +53,19 @@ export class SearchFormComponent {
   }
 
   /**
-   * Accordionの開閉を切り替える
+   * モーダルを閉じる
    */
-  toggleAccordion(): void {
-    this.isExpanded.update(value => !value);
+  handleClose(): void {
+    this.onClose.emit();
+  }
+
+  /**
+   * 背景クリックでモーダルを閉じる
+   */
+  handleBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.handleClose();
+    }
   }
 
   /**

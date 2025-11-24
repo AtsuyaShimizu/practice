@@ -1,0 +1,54 @@
+<div class="board-controller">
+  <div class="controller-content">
+    <!-- 左矢印 -->
+    <button
+      class="nav-button nav-button-prev"
+      [disabled]="!hasPrevPage()"
+      (click)="goToPrevPage()"
+      [attr.aria-label]="'前のページへ'"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- 画面名 -->
+    <div class="page-title">
+      {{ currentPage.label }}
+    </div>
+
+    <!-- 右矢印 -->
+    <button
+      class="nav-button nav-button-next"
+      [disabled]="!hasNextPage()"
+      (click)="goToNextPage()"
+      [attr.aria-label]="'次のページへ'"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M8 4L14 10L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- フィルターボタン -->
+    <button
+      class="filter-button"
+      (click)="openSearchModal()"
+      [attr.aria-label]="'フィルターを開く'"
+    >
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M2 4H18M5 10H15M8 16H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- 検索モーダル -->
+@if (isSearchModalOpen()) {
+  <app-search-modal
+    [fields]="currentPage.searchFields"
+    [title]="currentPage.label + ' 検索条件'"
+    (onClose)="closeSearchModal()"
+    (onSearch)="handleSearch($event)"
+    (onClear)="handleClear()"
+  />
+}

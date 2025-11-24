@@ -1,0 +1,81 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.line-chart {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+
+  .axis-line {
+    stroke: #5a5a5a;
+    stroke-width: 1.5;
+  }
+
+  .axis-tick {
+    stroke: #5a5a5a;
+    stroke-width: 1;
+  }
+
+  .grid-line {
+    stroke: #3a3a3a;
+    stroke-width: 1;
+    stroke-dasharray: 3, 3;
+    opacity: 0.5;
+  }
+
+  .axis-label {
+    fill: #b0b0b0;
+    font-size: 12px; // Fixed: ラベルは12px
+  }
+
+  .axis-title {
+    fill: #d0d0d0;
+    font-size: 14px; // Fixed: 軸のタイトルは14px
+    font-weight: 500;
+  }
+
+  .line {
+    transition: stroke-width 0.2s ease;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+
+    &:hover {
+      stroke-width: 3 !important;
+      cursor: pointer;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+    }
+  }
+
+  .data-point {
+    transition: r 0.2s ease;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+
+    &:hover {
+      r: 5;
+      cursor: pointer;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+    }
+  }
+}
+
+.no-data {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-radius: 12px;
+  border: 1px dashed #3d3d3d;
+}

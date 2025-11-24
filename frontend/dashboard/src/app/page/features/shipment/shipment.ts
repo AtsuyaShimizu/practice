@@ -8,5 +8,4 @@ import { BoardComponent } from '../../parts/board/board';
   styleUrl: './shipment.scss',
 })
 export class ShipmentComponent {
-  title = '出荷予実';
 }

@@ -1,0 +1,158 @@
+@if (chartData()) {
+  <!-- 線グラフ -->
+  <div class="line-chart" #chartContainer>
+    <svg
+      class="chart-svg"
+      [attr.width]="width"
+      [attr.height]="height"
+      [attr.viewBox]="'0 0 ' + width + ' ' + height"
+    >
+      <defs>
+        <!-- グラデーション定義 -->
+        <linearGradient id="planGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:0.2" />
+          <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0" />
+        </linearGradient>
+        <linearGradient id="actualGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#F472B6;stop-opacity:0.2" />
+          <stop offset="100%" style="stop-color:#F472B6;stop-opacity:0" />
+        </linearGradient>
+      </defs>
+
+      <!-- グラフ描画エリア -->
+      <g [attr.transform]="'translate(' + padding.left + ',' + padding.top + ')'">
+        <!-- グリッド線 -->
+        @if (chartData()?.config?.showGrid) {
+          <g class="grid">
+            @for (line of getHorizontalGridLines(); track $index) {
+              <line
+                [attr.x1]="0"
+                [attr.y1]="line"
+                [attr.x2]="chartWidth"
+                [attr.y2]="line"
+                class="grid-line"
+              />
+            }
+          </g>
+        }
+
+        <!-- X軸 -->
+        <line
+          [attr.x1]="0"
+          [attr.y1]="chartHeight"
+          [attr.x2]="chartWidth"
+          [attr.y2]="chartHeight"
+          class="axis-line"
+        />
+
+        <!-- X軸メモリ（1時間単位） -->
+        @for (tick of getXAxisTicks(); track $index) {
+          <line
+            [attr.x1]="tick.x"
+            [attr.y1]="chartHeight"
+            [attr.x2]="tick.x"
+            [attr.y2]="chartHeight + 5"
+            class="axis-tick"
+          />
+        }
+
+        <!-- Y軸 -->
+        <line
+          [attr.x1]="0"
+          [attr.y1]="0"
+          [attr.x2]="0"
+          [attr.y2]="chartHeight"
+          class="axis-line"
+        />
+
+        <!-- Y軸メモリ -->
+        @for (tick of getYAxisTicks(); track $index) {
+          <line
+            [attr.x1]="-5"
+            [attr.y1]="tick.y"
+            [attr.x2]="0"
+            [attr.y2]="tick.y"
+            class="axis-tick"
+          />
+        }
+
+        <!-- データ系列 -->
+        @for (series of chartData()!.series; track series.name; let i = $index) {
+          <g class="series">
+            <!-- エリア（グラデーション） -->
+            <path
+              [attr.d]="getAreaPath(i)"
+              [attr.fill]="i === 0 ? 'url(#planGradient)' : 'url(#actualGradient)'"
+            />
+
+            <!-- 線 -->
+            <polyline
+              [attr.points]="getLinePoints(i)"
+              [attr.stroke]="series.color"
+              [attr.stroke-width]="series.lineWidth || 2"
+              fill="none"
+              class="line"
+            />
+
+            <!-- データポイント -->
+            @if (series.showPoints) {
+              @for (point of getPoints(i); track $index) {
+                <circle
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="3"
+                  [attr.fill]="series.color"
+                  class="data-point"
+                />
+              }
+            }
+          </g>
+        }
+      </g>
+
+      <!-- X軸ラベル（4時間単位） -->
+      @for (label of getXAxisLabels(); track $index) {
+        <text
+          [attr.x]="label.x + padding.left"
+          [attr.y]="height - padding.bottom + 20"
+          class="axis-label"
+          text-anchor="middle"
+        >
+          {{ label.text }}
+        </text>
+      }
+
+      <!-- Y軸ラベル -->
+      @for (label of getYAxisLabels(); track $index) {
+        <text
+          [attr.x]="padding.left - 10"
+          [attr.y]="label.y + padding.top"
+          class="axis-label"
+          text-anchor="end"
+          dominant-baseline="middle"
+        >
+          {{ label.text }}
+        </text>
+      }
+
+      <!-- Y軸タイトル -->
+      @if (chartData()?.config?.showYAxisLabel) {
+        <text
+          [attr.x]="10"
+          [attr.y]="height / 2"
+          class="axis-title"
+          text-anchor="middle"
+          [attr.transform]="'rotate(-90, 10, ' + (height / 2) + ')'"
+        >
+          {{ chartData()?.config?.yAxisLabel }}
+        </text>
+      }
+    </svg>
+  </div>
+}
+
+@if (!chartData()) {
+  <div class="no-data">
+    データがありません
+  </div>
+}

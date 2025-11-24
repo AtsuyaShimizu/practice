@@ -1,19 +1,17 @@
-<div class="search-form-container">
-  <!-- Accordion Header -->
-  <div class="accordion-header" (click)="toggleAccordion()">
-    <div class="header-content">
-      <span class="header-icon" [class.expanded]="isExpanded()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<div class="modal-backdrop" (click)="handleBackdropClick($event)">
+  <div class="modal-container">
+    <!-- モーダルヘッダー -->
+    <div class="modal-header">
+      <h2 class="modal-title">{{ title() }}</h2>
+      <button class="close-button" (click)="handleClose()" [attr.aria-label]="'閉じる'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-      </span>
-      <h3 class="header-title">{{ title() }}</h3>
+      </button>
     </div>
-  </div>
 
-  <!-- Accordion Content -->
-  @if (isExpanded()) {
-    <div class="accordion-content">
+    <!-- モーダルコンテンツ -->
+    <div class="modal-content">
       <div class="search-fields">
         @for (field of fields(); track field.key) {
           <div class="field-group">
@@ -88,23 +86,23 @@
           </div>
         }
       </div>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button class="btn btn-clear" (click)="handleClear()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          クリア
-        </button>
-        <button class="btn btn-search" (click)="handleSearch()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M10 10L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          適用
-        </button>
-      </div>
     </div>
-  }
+
+    <!-- モーダルフッター -->
+    <div class="modal-footer">
+      <button class="btn btn-clear" (click)="handleClear()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        クリア
+      </button>
+      <button class="btn btn-search" (click)="handleSearch()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 10L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        適用
+      </button>
+    </div>
+  </div>
 </div>

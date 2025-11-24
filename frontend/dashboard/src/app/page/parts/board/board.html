@@ -1,14 +1,4 @@
 <div class="board-container">
-  @if (searchFields().length > 0) {
-    <div class="board-header">
-      <app-search-form
-        [fields]="searchFields()"
-        [title]="searchTitle()"
-        (onSearch)="handleSearch($event)"
-        (onClear)="handleClear()"
-      />
-    </div>
-  }
   <div class="board-content">
     <ng-content></ng-content>
   </div>
