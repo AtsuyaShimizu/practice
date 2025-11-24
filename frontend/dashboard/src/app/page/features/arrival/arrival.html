@@ -1,12 +1,20 @@
 <app-board>
-  <div class="arrival-content">
-    @if (showGraph()) {
-      <app-arrival-plan-actual-line-chart
-        [plans]="arrivalPlans"
-        [actuals]="arrivalActuals"
-        [showCloseButton]="true"
-        (onClose)="handleGraphClose()"
-      />
-    }
-  </div>
+  <!-- 各スロット用のテンプレートを提供 -->
+  @for (slotIndex of [0, 1, 2, 3]; track slotIndex) {
+    <ng-template [appSlotContent]="slotIndex">
+      @if (layoutService.getGraphAtSlot(slotIndex); as graph) {
+        @switch (graph.type) {
+          @case (GraphType.ArrivalPlanActualLine) {
+            <app-arrival-plan-actual-line-chart
+              [plans]="arrivalPlans"
+              [actuals]="arrivalActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
+          <!-- 他のグラフタイプもここに追加可能 -->
+        }
+      }
+    </ng-template>
+  }
 </app-board>

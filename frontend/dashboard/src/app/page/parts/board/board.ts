@@ -1,18 +1,23 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, signal, ContentChildren, QueryList, TemplateRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { LayoutService } from '../../../services/layout.service';
 import { GraphSelectorComponent } from '../graph-selector/graph-selector';
 import { GraphType } from '../../../model/domain';
+import { SlotContentDirective } from './slot-content.directive';
+import { NgTemplateOutlet } from '@angular/common';
 
 @Component({
   selector: 'app-board',
-  imports: [GraphSelectorComponent],
+  imports: [GraphSelectorComponent, NgTemplateOutlet],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })
 export class BoardComponent {
   readonly layoutService = inject(LayoutService);
   private readonly router = inject(Router);
+
+  // 親コンポーネントから提供されるスロットコンテンツ
+  @ContentChildren(SlotContentDirective) slotContents!: QueryList<SlotContentDirective>;
 
   // グラフ選択モーダルの表示状態
   isGraphSelectorOpen = signal(false);
@@ -84,5 +89,13 @@ export class BoardComponent {
    */
   onGraphRemove(graphId: string): void {
     this.layoutService.removeGraph(graphId);
+  }
+
+  /**
+   * 指定されたスロットのテンプレートを取得
+   */
+  getTemplateForSlot(slotIndex: number): TemplateRef<any> | null {
+    const content = this.slotContents?.find(c => c.slotIndex() === slotIndex);
+    return content?.templateRef || null;
   }
 }

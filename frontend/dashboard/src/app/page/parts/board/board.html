@@ -6,11 +6,13 @@
         [style.grid-area]="getSlotGridArea(slotIndex)"
         (click)="onSlotClick(slotIndex)"
       >
-        @if (layoutService.getGraphAtSlot(slotIndex); as graph) {
-          <!-- グラフが配置されている場合 -->
-          <div class="graph-wrapper">
-            <ng-content [select]="'[data-graph-type=' + graph.type + ']'"></ng-content>
-          </div>
+        @if (layoutService.getGraphAtSlot(slotIndex)) {
+          <!-- グラフが配置されている場合、テンプレートをレンダリング -->
+          @if (getTemplateForSlot(slotIndex); as template) {
+            <div class="graph-wrapper">
+              <ng-container *ngTemplateOutlet="template"></ng-container>
+            </div>
+          }
         } @else {
           <!-- 空のスロット -->
           <div class="empty-slot">

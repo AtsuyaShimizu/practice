@@ -114,9 +114,9 @@ export class LayoutService {
       case LayoutType.Single:
         return '1fr';
       case LayoutType.TwoColumns:
-        return '1fr 1fr';
+        return '1fr / 1fr 1fr'; // 1行2列
       case LayoutType.TwoRows:
-        return '1fr / 1fr 1fr';
+        return '1fr 1fr / 1fr'; // 2行1列
       case LayoutType.Grid2x2:
         return '1fr 1fr / 1fr 1fr';
       case LayoutType.TopOne:

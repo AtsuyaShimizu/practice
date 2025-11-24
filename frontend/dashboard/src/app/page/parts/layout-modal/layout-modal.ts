@@ -26,14 +26,14 @@ export class LayoutModalComponent {
       label: '1×2',
       description: '横に2つのグラフを表示',
       slots: 2,
-      gridTemplate: '1fr 1fr',
+      gridTemplate: '1fr / 1fr 1fr', // 1行2列
     },
     {
       type: LayoutType.TwoRows,
       label: '2×1',
       description: '縦に2つのグラフを表示',
       slots: 2,
-      gridTemplate: '1fr / 1fr',
+      gridTemplate: '1fr 1fr / 1fr', // 2行1列
     },
     {
       type: LayoutType.Grid2x2,
