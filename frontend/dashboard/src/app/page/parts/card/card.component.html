@@ -1,0 +1,47 @@
+<div class="card-container">
+  <!-- カードタイトル -->
+  @if (title()) {
+    <div class="card-header">
+      <div class="card-title">
+        {{ title() }}
+      </div>
+      @if (showCloseButton()) {
+        <button class="close-button" (click)="handleClose($event)" [attr.aria-label]="'閉じる'">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 凡例コンテナ -->
+  @if (showLegend() && legendItems().length > 0) {
+    <div class="legend-container">
+      @for (item of legendItems(); track item.name) {
+        <div class="legend-item">
+          @if (item.shape === 'circle') {
+            <svg class="legend-icon" width="12" height="12">
+              <circle cx="6" cy="6" r="5" [attr.fill]="item.color" />
+            </svg>
+          } @else if (item.shape === 'square') {
+            <svg class="legend-icon" width="12" height="12">
+              <rect width="12" height="12" [attr.fill]="item.color" />
+            </svg>
+          } @else {
+            <!-- デフォルトは線 -->
+            <svg class="legend-icon" width="20" height="12">
+              <line x1="0" y1="6" x2="20" y2="6" [attr.stroke]="item.color" stroke-width="2" />
+            </svg>
+          }
+          <span class="legend-label">{{ item.name }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- コンテンツエリア（グラフコンポーネントを投影） -->
+  <div class="card-content">
+    <ng-content></ng-content>
+  </div>
+</div>

@@ -1,8 +1,12 @@
 <app-board>
   <div class="arrival-content">
-    <app-arrival-plan-actual-line-chart
-      [plans]="arrivalPlans"
-      [actuals]="arrivalActuals"
-    />
+    @if (showGraph()) {
+      <app-arrival-plan-actual-line-chart
+        [plans]="arrivalPlans"
+        [actuals]="arrivalActuals"
+        [showCloseButton]="true"
+        (onClose)="handleGraphClose()"
+      />
+    }
   </div>
 </app-board>

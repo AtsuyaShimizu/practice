@@ -58,9 +58,9 @@
   text-align: center;
 }
 
+.layout-button,
 .filter-button {
   position: absolute;
-  right: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,6 +87,14 @@
     width: 18px;
     height: 18px;
   }
+}
+
+.layout-button {
+  right: 68px; // filter-buttonの左側に配置
+}
+
+.filter-button {
+  right: 24px;
 }
 
 // レスポンシブ対応

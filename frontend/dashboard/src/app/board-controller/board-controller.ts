@@ -1,7 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchModalComponent } from '../page/parts/search-modal/search-modal';
-import { SearchFieldConfig, SearchFieldType } from '../model/domain';
+import { LayoutModalComponent } from '../page/parts/layout-modal/layout-modal';
+import { LayoutService } from '../services/layout.service';
+import { SearchFieldConfig, SearchFieldType, LayoutType } from '../model/domain';
 
 export interface BoardPage {
   label: string;
@@ -11,7 +13,7 @@ export interface BoardPage {
 
 @Component({
   selector: 'app-board-controller',
-  imports: [SearchModalComponent],
+  imports: [SearchModalComponent, LayoutModalComponent],
   templateUrl: './board-controller.html',
   styleUrl: './board-controller.scss',
 })
@@ -83,6 +85,11 @@ export class BoardController {
 
   // 検索モーダルの表示状態
   isSearchModalOpen = signal(false);
+
+  // レイアウト選択モーダルの表示状態
+  isLayoutModalOpen = signal(false);
+
+  private readonly layoutService = inject(LayoutService);
 
   constructor(private router: Router) {
     // 現在のルートに基づいてページインデックスを設定
@@ -174,5 +181,27 @@ export class BoardController {
   handleClear(): void {
     console.log('Clear search');
     // TODO: クリア処理を実装
+  }
+
+  /**
+   * レイアウト選択モーダルを開く
+   */
+  openLayoutModal(): void {
+    this.isLayoutModalOpen.set(true);
+  }
+
+  /**
+   * レイアウト選択モーダルを閉じる
+   */
+  closeLayoutModal(): void {
+    this.isLayoutModalOpen.set(false);
+  }
+
+  /**
+   * レイアウト選択
+   */
+  handleLayoutSelect(layoutType: LayoutType): void {
+    this.layoutService.setLayout(layoutType);
+    this.closeLayoutModal();
   }
 }

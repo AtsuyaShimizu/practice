@@ -1,0 +1,54 @@
+<div class="modal-backdrop" (click)="handleBackdropClick($event)">
+  <div class="modal-container">
+    <!-- モーダルヘッダー -->
+    <div class="modal-header">
+      <h2 class="modal-title">グラフを選択</h2>
+      <button class="close-button" (click)="handleClose()" [attr.aria-label]="'閉じる'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- モーダルコンテンツ -->
+    <div class="modal-content">
+      <div class="graph-grid">
+        @for (graph of filteredGraphs; track graph.type) {
+          <div
+            class="graph-card"
+            (click)="selectGraph(graph.type)"
+          >
+            <div class="graph-icon">
+              @if (getGraphIcon(graph.type) === 'line') {
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                  <path d="M8 32L16 24L24 28L40 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="8" cy="32" r="3" fill="currentColor"/>
+                  <circle cx="16" cy="24" r="3" fill="currentColor"/>
+                  <circle cx="24" cy="28" r="3" fill="currentColor"/>
+                  <circle cx="40" cy="12" r="3" fill="currentColor"/>
+                </svg>
+              }
+              @if (getGraphIcon(graph.type) === 'pie') {
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="3"/>
+                  <path d="M24 8V24L36 16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+              @if (getGraphIcon(graph.type) === 'bar') {
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                  <rect x="8" y="20" width="8" height="20" fill="currentColor" rx="2"/>
+                  <rect x="20" y="12" width="8" height="28" fill="currentColor" rx="2"/>
+                  <rect x="32" y="16" width="8" height="24" fill="currentColor" rx="2"/>
+                </svg>
+              }
+            </div>
+            <div class="graph-info">
+              <div class="graph-label">{{ graph.label }}</div>
+              <div class="graph-description">{{ graph.description }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

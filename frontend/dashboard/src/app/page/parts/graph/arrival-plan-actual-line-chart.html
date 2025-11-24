@@ -1,29 +1,13 @@
-@if (chartData) {
-  <div class="chart-container">
-    <!-- チャートタイトル -->
-    <div class="chart-title">
-      {{ chartData.config?.title }}
-    </div>
-
-    <!-- 凡例コンテナ -->
-    @if (chartData.config?.showLegend) {
-      <div class="legend-container">
-        @for (series of chartData.series; track series.name) {
-          <div class="legend-item">
-            <svg class="legend-icon" width="20" height="12">
-              <line x1="0" y1="6" x2="20" y2="6" [attr.stroke]="series.color" stroke-width="2" />
-            </svg>
-            <span class="legend-label">{{ series.name }}</span>
-          </div>
-        }
-      </div>
-    }
-
-    <!-- 線グラフコンポーネント -->
-    <div class="line-chart-wrapper">
-      <app-line-chart [chartData]="chartData" />
-    </div>
-  </div>
+@if (chartData && isVisible()) {
+  <app-card
+    [title]="chartData.config?.title"
+    [showLegend]="chartData.config?.showLegend || false"
+    [legendItems]="legendItems()"
+    [showCloseButton]="showCloseButton()"
+    (onClose)="handleClose()"
+  >
+    <app-line-chart [chartData]="chartData" />
+  </app-card>
 }
 
 @if (!chartData) {

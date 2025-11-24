@@ -1,0 +1,61 @@
+<div class="modal-backdrop" (click)="handleBackdropClick($event)">
+  <div class="modal-container">
+    <!-- モーダルヘッダー -->
+    <div class="modal-header">
+      <h2 class="modal-title">レイアウトを選択</h2>
+      <button class="close-button" (click)="handleClose()" [attr.aria-label]="'閉じる'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- モーダルコンテンツ -->
+    <div class="modal-content">
+      <div class="layout-grid">
+        @for (layout of layouts; track layout.type) {
+          <div
+            class="layout-card"
+            (click)="selectLayout(layout.type)"
+          >
+            <div class="layout-preview" [ngClass]="getPreviewClass(layout.type)">
+              @switch (layout.type) {
+                @case ('1x1') {
+                  <div class="preview-box full"></div>
+                }
+                @case ('1x2') {
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                }
+                @case ('2x1') {
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                }
+                @case ('2x2') {
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                }
+                @case ('top-1') {
+                  <div class="preview-box span-2"></div>
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                }
+                @case ('bottom-1') {
+                  <div class="preview-box"></div>
+                  <div class="preview-box"></div>
+                  <div class="preview-box span-2"></div>
+                }
+              }
+            </div>
+            <div class="layout-info">
+              <div class="layout-label">{{ layout.label }}</div>
+              <div class="layout-description">{{ layout.description }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
