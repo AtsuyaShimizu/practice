@@ -17,7 +17,7 @@
   .sidebar-content {
     height: 100%;
     overflow-y: auto;
-    padding-top: 72px;
+    padding-top: 56px;
     padding-bottom: 16px;
   }
 
@@ -27,7 +27,9 @@
     gap: 4px;
 
     .nav-item {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 12px 20px;
       cursor: pointer;
       transition: background-color 0.15s, border-left-color 0.15s;
@@ -39,6 +41,10 @@
       &:hover {
         background-color: #252525;
         border-left-color: #667eea;
+
+        .nav-icon {
+          color: #b8c5ff;
+        }
       }
 
       &:active {
@@ -51,6 +57,28 @@
 
         .nav-label {
           color: #ffffff;
+        }
+
+        .nav-icon {
+          color: #667eea;
+        }
+      }
+
+      .nav-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        color: #999;
+        transition: color 0.15s;
+
+        svg {
+          width: 20px;
+          height: 20px;
+          stroke: currentColor;
+          fill: none;
         }
       }
 

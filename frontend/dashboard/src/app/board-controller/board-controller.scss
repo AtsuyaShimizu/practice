@@ -5,9 +5,8 @@
 }
 
 .controller-content {
-  max-width: 1400px;
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,17 +89,17 @@
 }
 
 .layout-button {
-  right: 68px; // filter-buttonの左側に配置
+  right: 56px; // filter-buttonから12px左に配置（12px + 32px + 12px）
 }
 
 .filter-button {
-  right: 24px;
+  right: 12px; // コンポーネント右端から12px
 }
 
 // レスポンシブ対応
 @media (max-width: 768px) {
   .controller-content {
-    padding: 8px 16px;
+    padding: 6px 16px;
     gap: 16px;
   }
 
@@ -109,8 +108,12 @@
     min-width: 140px;
   }
 
+  .layout-button {
+    right: 48px; // filter-buttonから12px左（モバイル版: 12px + 28px + 8px）
+  }
+
   .filter-button {
-    right: 16px;
+    right: 12px; // モバイル版も12px
   }
 
   .nav-button {

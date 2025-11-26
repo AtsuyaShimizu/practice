@@ -5,7 +5,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 export interface NavigationItem {
   label: string;
   path: string;
-  icon?: string;
+  iconType?: 'arrival' | 'shipment';
 }
 
 @Component({
@@ -19,8 +19,16 @@ export class SideBar {
   toggleSidebar = output<void>();
 
   navigationItems: NavigationItem[] = [
-    { label: '入荷予実', path: '/arrival' },
-    { label: '出荷予実', path: '/shipment' },
+    {
+      label: '入荷予実',
+      path: '/arrival',
+      iconType: 'arrival'
+    },
+    {
+      label: '出荷予実',
+      path: '/shipment',
+      iconType: 'shipment'
+    },
   ];
 
   constructor(private router: Router) {}

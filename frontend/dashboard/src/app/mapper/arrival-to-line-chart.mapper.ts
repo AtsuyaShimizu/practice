@@ -62,7 +62,7 @@ function aggregateByHour(
 }
 
 /**
- * 入荷予定と実績データを線グラフモデルに変換する
+ * 入荷予定と実績データを線グラフモデルに変換する（累積グラフ）
  * @param plans 入荷予定データの配列
  * @param actuals 入荷実績データの配列
  * @param config グラフの設定（オプション）
@@ -79,27 +79,37 @@ export function mapArrivalToLineChart(
 ): LineChartModel {
   const aggregated = aggregateByHour(plans, actuals);
 
-  const planDataPoints: LineChartDataPoint[] = aggregated.map(item => ({
-    x: item.dateTime,
-    y: item.planTotal,
-  }));
+  // 累積値を計算
+  let planCumulative = 0;
+  let actualCumulative = 0;
 
-  const actualDataPoints: LineChartDataPoint[] = aggregated.map(item => ({
-    x: item.dateTime,
-    y: item.actualTotal,
-  }));
+  const planDataPoints: LineChartDataPoint[] = aggregated.map(item => {
+    planCumulative += item.planTotal;
+    return {
+      x: item.dateTime,
+      y: planCumulative,
+    };
+  });
+
+  const actualDataPoints: LineChartDataPoint[] = aggregated.map(item => {
+    actualCumulative += item.actualTotal;
+    return {
+      x: item.dateTime,
+      y: actualCumulative,
+    };
+  });
 
   return {
     series: [
       {
-        name: '入荷予定',
+        name: '入荷予定（累積）',
         data: planDataPoints,
         color: '#60A5FA',
         lineWidth: 2.5,
         showPoints: true,
       },
       {
-        name: '入荷実績',
+        name: '入荷実績（累積）',
         data: actualDataPoints,
         color: '#F472B6',
         lineWidth: 2.5,
@@ -107,9 +117,9 @@ export function mapArrivalToLineChart(
       },
     ],
     config: {
-      title: config?.title || '入荷予実推移（1時間単位）',
+      title: config?.title || '入荷予実推移（累積）',
       xAxisLabel: config?.xAxisLabel || '時刻',
-      yAxisLabel: config?.yAxisLabel || '数量',
+      yAxisLabel: config?.yAxisLabel || '累積数量',
       showLegend: true,
       showGrid: true,
       animation: true,

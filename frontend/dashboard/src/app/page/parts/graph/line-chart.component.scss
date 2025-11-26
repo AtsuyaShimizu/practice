@@ -63,6 +63,34 @@
       filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
     }
   }
+
+  .tooltip {
+    pointer-events: none;
+
+    .tooltip-background {
+      fill: rgba(30, 30, 30, 0.95);
+      stroke: #5a5a5a;
+      stroke-width: 1;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    .tooltip-series {
+      fill: #d0d0d0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tooltip-time {
+      fill: #b0b0b0;
+      font-size: 11px;
+    }
+
+    .tooltip-value {
+      fill: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+  }
 }
 
 .no-data {

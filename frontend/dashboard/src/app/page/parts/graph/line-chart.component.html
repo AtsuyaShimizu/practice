@@ -96,13 +96,15 @@
 
             <!-- データポイント -->
             @if (series.showPoints) {
-              @for (point of getPoints(i); track $index) {
+              @for (point of getPoints(i); track $index; let pointIndex = $index) {
                 <circle
                   [attr.cx]="point.x"
                   [attr.cy]="point.y"
                   r="3"
                   [attr.fill]="series.color"
                   class="data-point"
+                  (mouseenter)="showTooltip($event, i, pointIndex)"
+                  (mouseleave)="hideTooltip()"
                 />
               }
             }
@@ -146,6 +148,29 @@
         >
           {{ chartData()?.config?.yAxisLabel }}
         </text>
+      }
+
+      <!-- ツールチップ -->
+      @if (tooltip.visible) {
+        <g class="tooltip" [attr.transform]="'translate(' + tooltip.x + ',' + tooltip.y + ')'">
+          <rect
+            class="tooltip-background"
+            x="-60"
+            y="-50"
+            width="120"
+            height="45"
+            rx="4"
+          />
+          <text class="tooltip-series" x="0" y="-30" text-anchor="middle">
+            {{ tooltip.seriesName }}
+          </text>
+          <text class="tooltip-time" x="0" y="-12" text-anchor="middle">
+            {{ tooltip.time }}
+          </text>
+          <text class="tooltip-value" x="0" y="6" text-anchor="middle">
+            {{ tooltip.value }}
+          </text>
+        </g>
       }
     </svg>
   </div>
