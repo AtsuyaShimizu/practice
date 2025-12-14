@@ -122,7 +122,10 @@ export class BoardController {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       this.currentPageIndex.set(newIndex);
-      this.router.navigate([this.pages[newIndex].path]);
+      const newPath = this.pages[newIndex].path;
+      this.router.navigate([newPath]);
+      // ページに応じて現在の画面を設定
+      this.updateLayoutServicePage(newPath);
     }
   }
 
@@ -134,7 +137,21 @@ export class BoardController {
     if (currentIndex < this.pages.length - 1) {
       const newIndex = currentIndex + 1;
       this.currentPageIndex.set(newIndex);
-      this.router.navigate([this.pages[newIndex].path]);
+      const newPath = this.pages[newIndex].path;
+      this.router.navigate([newPath]);
+      // ページに応じて現在の画面を設定
+      this.updateLayoutServicePage(newPath);
+    }
+  }
+
+  /**
+   * パスに応じてLayoutServiceの現在の画面を更新
+   */
+  private updateLayoutServicePage(path: string): void {
+    if (path.includes('/arrival')) {
+      this.layoutService.setCurrentPage('arrival');
+    } else if (path.includes('/shipment')) {
+      this.layoutService.setCurrentPage('shipment');
     }
   }
 

@@ -10,6 +10,7 @@ import { GraphType } from '../../../model/domain';
 
 @Component({
   selector: 'app-arrival',
+  
   imports: [BoardComponent, SlotContentDirective, ArrivalPlanActualLineChartComponent, ArrivalPlanActualBarChartComponent, ArrivalProgressPieChartComponent],
   templateUrl: './arrival.html',
   styleUrl: './arrival.scss',
@@ -27,6 +28,8 @@ export class ArrivalComponent implements AfterViewInit {
   readonly GraphType = GraphType;
 
   ngAfterViewInit(): void {
+    // 現在の画面を設定
+    this.layoutService.setCurrentPage('arrival');
     console.log("予定：", arrivalPlans);
   }
 

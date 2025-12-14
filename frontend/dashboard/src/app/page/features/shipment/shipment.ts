@@ -27,6 +27,8 @@ export class ShipmentComponent implements AfterViewInit {
   readonly GraphType = GraphType;
 
   ngAfterViewInit(): void {
+    // 現在の画面を設定
+    this.layoutService.setCurrentPage('shipment');
     console.log("出荷予定：", shipmentPlans);
   }
 

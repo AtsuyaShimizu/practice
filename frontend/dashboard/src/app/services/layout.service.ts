@@ -1,25 +1,46 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { LayoutType, PlacedGraph, GraphType } from '../model/domain';
 
+/**
+ * 画面の種類
+ */
+export type PageType = 'arrival' | 'shipment';
+
+/**
+ * 各画面の状態
+ */
+interface PageState {
+  layoutType: LayoutType;
+  graphs: PlacedGraph[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class LayoutService {
-  // 現在のレイアウトタイプ
-  private currentLayoutType = signal<LayoutType>(LayoutType.Single);
+  // 現在の画面
+  private currentPage = signal<PageType>('arrival');
 
-  // 配置されたグラフ
-  private placedGraphs = signal<PlacedGraph[]>([]);
+  // 各画面の状態を保持（signalとして管理）
+  private pageStates = signal(new Map<PageType, PageState>([
+    ['arrival', { layoutType: LayoutType.Single, graphs: [] }],
+    ['shipment', { layoutType: LayoutType.Single, graphs: [] }],
+  ]));
+
+  // 現在の画面の状態を取得するcomputed
+  private currentPageState = computed(() => {
+    return this.pageStates().get(this.currentPage())!;
+  });
 
   // 現在のレイアウトタイプを取得
-  readonly layoutType = this.currentLayoutType.asReadonly();
+  readonly layoutType = computed(() => this.currentPageState().layoutType);
 
   // 配置されたグラフを取得
-  readonly graphs = this.placedGraphs.asReadonly();
+  readonly graphs = computed(() => this.currentPageState().graphs);
 
   // スロット数を計算
   readonly slotCount = computed(() => {
-    switch (this.currentLayoutType()) {
+    switch (this.layoutType()) {
       case LayoutType.Single:
         return 1;
       case LayoutType.TwoColumns:
@@ -36,20 +57,42 @@ export class LayoutService {
   });
 
   /**
+   * 現在の画面を設定
+   */
+  setCurrentPage(page: PageType): void {
+    this.currentPage.set(page);
+  }
+
+  /**
+   * 現在の画面を取得
+   */
+  getCurrentPage(): PageType {
+    return this.currentPage();
+  }
+
+  /**
    * レイアウトタイプを変更
    */
   setLayout(layoutType: LayoutType): void {
     const currentSlotCount = this.slotCount();
     const newSlotCount = this.getSlotCountForLayout(layoutType);
 
-    this.currentLayoutType.set(layoutType);
+    const page = this.currentPage();
+    const currentStates = this.pageStates();
+    const state = currentStates.get(page)!;
 
-    // スロット数が減った場合、余分なグラフを削除
-    if (newSlotCount < currentSlotCount) {
-      this.placedGraphs.update(graphs =>
-        graphs.filter(g => g.slotIndex < newSlotCount)
-      );
-    }
+    // 新しい状態を作成（浅いコピー）
+    const newState: PageState = {
+      layoutType: layoutType,
+      graphs: newSlotCount < currentSlotCount
+        ? state.graphs.filter(g => g.slotIndex < newSlotCount)
+        : state.graphs
+    };
+
+    // 新しいMapを作成して状態を更新
+    const newStates = new Map(currentStates);
+    newStates.set(page, newState);
+    this.pageStates.set(newStates);
   }
 
   /**
@@ -63,27 +106,50 @@ export class LayoutService {
       slotIndex,
     };
 
-    this.placedGraphs.update(graphs => {
-      // 同じスロットに既にグラフがある場合は置き換え
-      const filtered = graphs.filter(g => g.slotIndex !== slotIndex);
-      return [...filtered, newGraph];
-    });
+    const page = this.currentPage();
+    const currentStates = this.pageStates();
+    const state = currentStates.get(page)!;
+
+    // 同じスロットに既にグラフがある場合は置き換え
+    const filtered = state.graphs.filter(g => g.slotIndex !== slotIndex);
+
+    // 新しい状態を作成（浅いコピー）
+    const newState: PageState = {
+      layoutType: state.layoutType,
+      graphs: [...filtered, newGraph]
+    };
+
+    // 新しいMapを作成して状態を更新
+    const newStates = new Map(currentStates);
+    newStates.set(page, newState);
+    this.pageStates.set(newStates);
   }
 
   /**
    * グラフを削除
    */
   removeGraph(graphId: string): void {
-    this.placedGraphs.update(graphs =>
-      graphs.filter(g => g.id !== graphId)
-    );
+    const page = this.currentPage();
+    const currentStates = this.pageStates();
+    const state = currentStates.get(page)!;
+
+    // 新しい状態を作成（浅いコピー）
+    const newState: PageState = {
+      layoutType: state.layoutType,
+      graphs: state.graphs.filter(g => g.id !== graphId)
+    };
+
+    // 新しいMapを作成して状態を更新
+    const newStates = new Map(currentStates);
+    newStates.set(page, newState);
+    this.pageStates.set(newStates);
   }
 
   /**
    * 特定のスロットのグラフを取得
    */
   getGraphAtSlot(slotIndex: number): PlacedGraph | undefined {
-    return this.placedGraphs().find(g => g.slotIndex === slotIndex);
+    return this.graphs().find(g => g.slotIndex === slotIndex);
   }
 
   /**
@@ -110,7 +176,7 @@ export class LayoutService {
    * グリッドテンプレートを取得
    */
   getGridTemplate(): string {
-    switch (this.currentLayoutType()) {
+    switch (this.layoutType()) {
       case LayoutType.Single:
         return '1fr';
       case LayoutType.TwoColumns:
@@ -132,7 +198,7 @@ export class LayoutService {
    * スロットのグリッド位置を取得
    */
   getSlotGridArea(slotIndex: number): string {
-    const layoutType = this.currentLayoutType();
+    const layoutType = this.layoutType();
 
     switch (layoutType) {
       case LayoutType.TopOne:
