@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, inject } from '@angular/core';
 import { BoardComponent } from '../../parts/board/board';
 import { SlotContentDirective } from '../../parts/board/slot-content.directive';
-import { ArrivalPlanActualLineChartComponent } from '../../parts/graph/arrival-plan-actual-line-chart';
-import { ArrivalPlanActualBarChartComponent } from '../../parts/graph/arrival-plan-actual-bar-chart';
-import { ArrivalProgressPieChartComponent } from '../../parts/graph/arrival-progress-pie-chart';
+import { ArrivalPlanActualLineChartComponent } from '../../parts/graph/arrival-plan-actual-line-chart/arrival-plan-actual-line-chart';
+import { ArrivalPlanActualBarChartComponent } from '../../parts/graph/arrival-plan-actual-bar-chart/arrival-plan-actual-bar-chart';
+import { ArrivalProgressPieChartComponent } from '../../parts/graph/arrival-progress-pie-chart/arrival-progress-pie-chart';
 import { arrivalPlans, arrivalActuals } from '../../../model/mock';
 import { LayoutService } from '../../../services/layout.service';
 import { GraphType } from '../../../model/domain';

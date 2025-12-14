@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
-import { BarChartModel } from '../../../model/graph';
+import { BarChartModel } from '../../../../model/graph';
 
 @Component({
   selector: 'app-bar-chart',

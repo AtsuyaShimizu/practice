@@ -1,20 +1,20 @@
 import { Component, OnInit, computed, input, output, signal } from '@angular/core';
-import { ShipmentPlan, ShipmentActual } from '../../../model/domain';
-import { LineChartModel } from '../../../model/graph';
-import { mapShipmentToLineChart } from '../../../mapper';
-import { LineChartComponent } from './line-chart.component';
-import { CardComponent, LegendItem } from '../card/card.component';
+import { ArrivalPlan, ArrivalActual } from '../../../../model/domain';
+import { LineChartModel } from '../../../../model/graph';
+import { mapArrivalToLineChart } from '../../../../mapper';
+import { LineChartComponent } from '../line-chart/line-chart.component';
+import { CardComponent, LegendItem } from '../../card/card.component';
 
 @Component({
-  selector: 'app-shipment-plan-actual-line-chart',
+  selector: 'app-arrival-plan-actual-line-chart',
   imports: [LineChartComponent, CardComponent],
-  templateUrl: './shipment-plan-actual-line-chart.html',
-  styleUrl: './shipment-plan-actual-line-chart.scss',
+  templateUrl: './arrival-plan-actual-line-chart.html',
+  styleUrl: './arrival-plan-actual-line-chart.scss',
 })
-export class ShipmentPlanActualLineChartComponent implements OnInit {
-  plans = input.required<ShipmentPlan[]>();
-  actuals = input.required<ShipmentActual[]>();
-  title = input<string>('出荷予実推移（日次）');
+export class ArrivalPlanActualLineChartComponent implements OnInit {
+  plans = input.required<ArrivalPlan[]>();
+  actuals = input.required<ArrivalActual[]>();
+  title = input<string>('入荷予実推移（1時間単位）');
   showCloseButton = input<boolean>(false);
 
   onClose = output<void>();
@@ -45,11 +45,11 @@ export class ShipmentPlanActualLineChartComponent implements OnInit {
     const actuals = this.actuals();
 
     if (plans && actuals) {
-      this.chartData = mapShipmentToLineChart(plans, actuals, {
+      this.chartData = mapArrivalToLineChart(plans, actuals, {
         title: this.title(),
       });
 
-      console.log("出荷線グラフ変換後：", this.chartData);
+      console.log("変換後：", this.chartData);
     }
   }
 

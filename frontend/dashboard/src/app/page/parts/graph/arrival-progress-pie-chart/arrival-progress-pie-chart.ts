@@ -1,8 +1,8 @@
 import { Component, OnInit, computed, input, output, signal } from '@angular/core';
-import { ArrivalPlan, ArrivalActual, ArrivalProcess } from '../../../model/domain';
-import { PieChartModel, PieChartSegment } from '../../../model/graph';
-import { PieChartComponent } from './pie-chart.component';
-import { CardComponent, LegendItem } from '../card/card.component';
+import { ArrivalPlan, ArrivalActual, ArrivalProcess } from '../../../../model/domain';
+import { PieChartModel, PieChartSegment } from '../../../../model/graph';
+import { PieChartComponent } from '../pie-chart/pie-chart.component';
+import { CardComponent, LegendItem } from '../../card/card.component';
 
 export interface ProgressStatus {
   status: 'ahead' | 'on-track' | 'delayed';

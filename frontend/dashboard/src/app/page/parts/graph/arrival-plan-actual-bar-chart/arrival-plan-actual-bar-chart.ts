@@ -1,20 +1,20 @@
 import { Component, OnInit, computed, input, output, signal } from '@angular/core';
-import { ShipmentPlan, ShipmentActual } from '../../../model/domain';
-import { BarChartModel } from '../../../model/graph';
-import { mapShipmentToBarChart } from '../../../mapper';
-import { BarChartComponent } from './bar-chart.component';
-import { CardComponent, LegendItem } from '../card/card.component';
+import { ArrivalPlan, ArrivalActual } from '../../../../model/domain';
+import { BarChartModel } from '../../../../model/graph';
+import { mapArrivalToBarChart } from '../../../../mapper';
+import { BarChartComponent } from '../bar-chart/bar-chart.component';
+import { CardComponent, LegendItem } from '../../card/card.component';
 
 @Component({
-  selector: 'app-shipment-plan-actual-bar-chart',
+  selector: 'app-arrival-plan-actual-bar-chart',
   imports: [BarChartComponent, CardComponent],
-  templateUrl: './shipment-plan-actual-bar-chart.html',
-  styleUrl: './shipment-plan-actual-bar-chart.scss',
+  templateUrl: './arrival-plan-actual-bar-chart.html',
+  styleUrl: './arrival-plan-actual-bar-chart.scss',
 })
-export class ShipmentPlanActualBarChartComponent implements OnInit {
-  plans = input.required<ShipmentPlan[]>();
-  actuals = input.required<ShipmentActual[]>();
-  title = input<string>('出荷予実推移（日次）');
+export class ArrivalPlanActualBarChartComponent implements OnInit {
+  plans = input.required<ArrivalPlan[]>();
+  actuals = input.required<ArrivalActual[]>();
+  title = input<string>('入荷予実推移（1時間単位）');
   showCloseButton = input<boolean>(false);
 
   onClose = output<void>();
@@ -45,11 +45,11 @@ export class ShipmentPlanActualBarChartComponent implements OnInit {
     const actuals = this.actuals();
 
     if (plans && actuals) {
-      this.chartData = mapShipmentToBarChart(plans, actuals, {
+      this.chartData = mapArrivalToBarChart(plans, actuals, {
         title: this.title(),
       });
 
-      console.log("出荷棒グラフ変換後：", this.chartData);
+      console.log("棒グラフ変換後：", this.chartData);
     }
   }
 

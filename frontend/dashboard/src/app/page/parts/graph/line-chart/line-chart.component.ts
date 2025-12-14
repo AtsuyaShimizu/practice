@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
-import { LineChartModel } from '../../../model/graph';
+import { LineChartModel } from '../../../../model/graph';
 
 @Component({
   selector: 'app-line-chart',

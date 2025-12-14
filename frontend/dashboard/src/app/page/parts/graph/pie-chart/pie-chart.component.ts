@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
-import { PieChartModel } from '../../../model/graph';
+import { PieChartModel } from '../../../../model/graph';
 
 interface SegmentData {
   startAngle: number;
