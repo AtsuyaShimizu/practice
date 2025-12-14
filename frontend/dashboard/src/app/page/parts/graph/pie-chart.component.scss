@@ -1,0 +1,56 @@
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pie-chart {
+  display: block;
+
+  .segment {
+    cursor: default;
+    stroke: #1e1e1e;
+    stroke-width: 2;
+  }
+
+  .segment-label {
+    fill: #f5f5f5;
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+  }
+}
+
+.tooltip {
+  position: absolute;
+  background: #2a2a2a;
+  color: #f5f5f5;
+  padding: 10px 14px;
+  border-radius: 6px;
+  pointer-events: none;
+  font-size: 13px;
+  z-index: 1000;
+  border: 1px solid #3d3d3d;
+  white-space: nowrap;
+
+  .tooltip-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .tooltip-value {
+    color: #d0d0d0;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .tooltip-percentage {
+    color: #b0b0b0;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+}

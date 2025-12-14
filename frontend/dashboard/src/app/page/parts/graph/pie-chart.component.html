@@ -1,0 +1,48 @@
+<div #chartContainer class="chart-container">
+  <svg [attr.width]="width" [attr.height]="height" class="pie-chart">
+    <!-- セグメント -->
+    @for (segment of segments; track segment.label) {
+      <g>
+        <path
+          [attr.d]="segment.path"
+          [attr.fill]="segment.color"
+          class="segment"
+          (mouseenter)="showTooltip($event, segment)"
+          (mousemove)="showTooltip($event, segment)"
+          (mouseleave)="hideTooltip()"
+        />
+
+        <!-- ラベル -->
+        @if (shouldShowLabel(segment)) {
+          <text
+            [attr.x]="segment.centerX"
+            [attr.y]="segment.centerY"
+            class="segment-label"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            @for (line of getLabelText(segment).split('\n'); track line; let i = $index) {
+              <tspan
+                [attr.x]="segment.centerX"
+                [attr.dy]="i === 0 ? 0 : '1.2em'"
+              >{{ line }}</tspan>
+            }
+          </text>
+        }
+      </g>
+    }
+  </svg>
+
+  <!-- ツールチップ -->
+  @if (tooltip.visible) {
+    <div
+      class="tooltip"
+      [style.left.px]="tooltip.x + 10"
+      [style.top.px]="tooltip.y - 10"
+    >
+      <div class="tooltip-label">{{ tooltip.label }}</div>
+      <div class="tooltip-value">{{ tooltip.value }}</div>
+      <div class="tooltip-percentage">{{ tooltip.percentage }}%</div>
+    </div>
+  }
+</div>

@@ -1,0 +1,17 @@
+@if (chartData && isVisible()) {
+  <app-card
+    [title]="chartData.config?.title"
+    [showLegend]="chartData.config?.showLegend || false"
+    [legendItems]="legendItems()"
+    [showCloseButton]="showCloseButton()"
+    (onClose)="handleClose()"
+  >
+    <app-line-chart [chartData]="chartData" />
+  </app-card>
+}
+
+@if (!chartData) {
+  <div class="no-data">
+    データがありません
+  </div>
+}

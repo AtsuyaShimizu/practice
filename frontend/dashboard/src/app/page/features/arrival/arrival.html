@@ -12,6 +12,22 @@
               (onClose)="handleGraphClose(graph.id)"
             />
           }
+          @case (GraphType.ArrivalBar) {
+            <app-arrival-plan-actual-bar-chart
+              [plans]="arrivalPlans"
+              [actuals]="arrivalActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
+          @case (GraphType.ArrivalPie) {
+            <app-arrival-progress-pie-chart
+              [plans]="arrivalPlans"
+              [actuals]="arrivalActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
           <!-- 他のグラフタイプもここに追加可能 -->
         }
       }

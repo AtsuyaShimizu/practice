@@ -1,0 +1,106 @@
+@if (isVisible()) {
+  <app-card
+    [title]="title()"
+    [showLegend]="true"
+    [legendItems]="legendItems()"
+    [showCloseButton]="showCloseButton()"
+    (onClose)="handleClose()"
+  >
+    <div class="chart-wrapper">
+      <!-- 左カラム: 全体進捗 -->
+      <div class="overall-progress">
+        <div class="section-title">全体進捗</div>
+        <div class="pie-chart-container">
+          <app-pie-chart [chartData]="chartData" />
+
+          <!-- 中央のテキスト（進捗率） -->
+          <div class="center-text">
+            <div class="progress-percentage">{{ getProgressText() }}</div>
+            <div class="progress-status" [style.color]="progressStatus.color">
+              {{ progressStatus.label }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央カラム: 工程別進捗 -->
+      <div class="process-progress">
+        <div class="section-title">工程別進捗</div>
+        <div class="process-list">
+          @for (processProgress of processProgresses; track processProgress.process) {
+            <div class="process-item">
+              <div class="process-header">
+                <span class="process-name">{{ processProgress.process }}</span>
+                <span class="process-percentage">{{ processProgress.percentage.toFixed(0) }}%</span>
+              </div>
+              <div class="process-bar">
+                <div
+                  class="process-fill"
+                  [style.width.%]="processProgress.percentage"
+                  [style.background-color]="processProgress.color"
+                ></div>
+              </div>
+              <div class="process-details">
+                <div class="detail">
+                  <span class="label">予定:</span>
+                  <span class="value">{{ processProgress.plannedQuantity.toLocaleString() }}</span>
+                </div>
+                <div class="detail">
+                  <span class="label">実績:</span>
+                  <span class="value">{{ processProgress.actualQuantity.toLocaleString() }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- 右カラム: 詳細情報 -->
+      <div class="progress-details">
+        <div class="section-title">詳細情報</div>
+
+        <div class="detail-item">
+          <span class="detail-label">一日の予定:</span>
+          <span class="detail-value">{{ totalPlannedQuantity.toLocaleString() }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">現在までの予定:</span>
+          <span class="detail-value">{{ plannedUntilNow.toLocaleString() }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">実績:</span>
+          <span class="detail-value">{{ actualQuantity.toLocaleString() }}</span>
+        </div>
+
+        <div class="detail-item highlight">
+          <span class="detail-label">進捗状況:</span>
+          <span class="detail-value" [style.color]="progressStatus.color">
+            {{ getExpectedProgressText() }}
+          </span>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar">
+            <!-- 期待される進捗（現在時刻までの予定） -->
+            <div
+              class="expected-progress"
+              [style.width.%]="expectedProgressPercentage"
+            ></div>
+            <!-- 実際の進捗 -->
+            <div
+              class="actual-progress"
+              [style.width.%]="progressPercentage"
+              [style.background-color]="progressStatus.color"
+            ></div>
+          </div>
+          <div class="progress-labels">
+            <span class="expected-label">期待進捗: {{ expectedProgressPercentage.toFixed(0) }}%</span>
+            <span class="actual-label">実績: {{ progressPercentage.toFixed(0) }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-card>
+}

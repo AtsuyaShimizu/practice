@@ -2,13 +2,15 @@ import { AfterViewInit, Component, inject } from '@angular/core';
 import { BoardComponent } from '../../parts/board/board';
 import { SlotContentDirective } from '../../parts/board/slot-content.directive';
 import { ArrivalPlanActualLineChartComponent } from '../../parts/graph/arrival-plan-actual-line-chart';
+import { ArrivalPlanActualBarChartComponent } from '../../parts/graph/arrival-plan-actual-bar-chart';
+import { ArrivalProgressPieChartComponent } from '../../parts/graph/arrival-progress-pie-chart';
 import { arrivalPlans, arrivalActuals } from '../../../model/mock';
 import { LayoutService } from '../../../services/layout.service';
 import { GraphType } from '../../../model/domain';
 
 @Component({
   selector: 'app-arrival',
-  imports: [BoardComponent, SlotContentDirective, ArrivalPlanActualLineChartComponent],
+  imports: [BoardComponent, SlotContentDirective, ArrivalPlanActualLineChartComponent, ArrivalPlanActualBarChartComponent, ArrivalProgressPieChartComponent],
   templateUrl: './arrival.html',
   styleUrl: './arrival.scss',
 })

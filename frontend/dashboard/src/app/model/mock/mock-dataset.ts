@@ -1,4 +1,4 @@
-import { ArrivalActual, ArrivalPlan, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo } from '../domain/index';
+import { ArrivalActual, ArrivalPlan, ArrivalProcess, HandlingUnitInfo, ItemInfo, ShipmentPlan, ShipmentActual, SkuInfo } from '../domain/index';
 
 const formatDateTime = (daysAgo: number, hours: number, minutes = 0): string => {
   const date = new Date();
@@ -173,10 +173,24 @@ const truckSchedule = generateTruckSchedule();
 const arrivalIdForIndex = (truckIndex: number, itemIndex: number): string =>
   `ARR-${pad(truckIndex + 1)}-${pad(itemIndex + 1)}`;
 
-// 入荷予定データ生成（トラック便単位で生成）
-export const arrivalPlans: ArrivalPlan[] = truckSchedule.flatMap((truck, truckIndex) => {
-  const arrivalDateTime = formatDateTime(truck.dayOffset, truck.baseHour, truck.baseMinute);
+// 入荷の工程
+const arrivalProcesses: ArrivalProcess[] = ['入荷', '検品', '入庫'];
 
+// 入荷予定データ生成（トラック便単位で生成、各工程ごとに予定を作成）
+interface ArrivalPlanBase {
+  arrivalId: string;
+  itemInfo: ItemInfo;
+  skuInfo: SkuInfo;
+  huInfo: HandlingUnitInfo;
+  quantity: number;
+  truckIndex: number;
+  itemIndex: number;
+  baseHour: number;
+  baseMinute: number;
+  dayOffset: number;
+}
+
+const arrivalPlansBase: ArrivalPlanBase[] = truckSchedule.flatMap((truck, truckIndex) => {
   return Array.from({ length: truck.itemsPerTruck }, (_, itemIndex) => {
     const item = itemCatalog[randomIntInRange(0, itemCatalog.length - 1)];
     const category = categories[Math.floor(itemCatalog.indexOf(item) / 6)];
@@ -191,13 +205,41 @@ export const arrivalPlans: ArrivalPlan[] = truckSchedule.flatMap((truck, truckIn
     const plannedQuantity = palletCount * config.palletSize;
 
     return {
-      id: `APL-${pad(truckIndex * 10 + itemIndex + 1, 4)}`,
       arrivalId: arrivalIdForIndex(truckIndex, itemIndex),
       itemInfo: item,
       skuInfo: sku,
       huInfo,
       quantity: plannedQuantity,
+      truckIndex,
+      itemIndex,
+      baseHour: truck.baseHour,
+      baseMinute: truck.baseMinute,
+      dayOffset: truck.dayOffset,
+    };
+  });
+});
+
+// 各工程の予定を作成
+export const arrivalPlans: ArrivalPlan[] = arrivalPlansBase.flatMap((base, baseIndex) => {
+  const baseDateTime = formatDateTime(base.dayOffset, base.baseHour, base.baseMinute);
+
+  return arrivalProcesses.map((process, processIndex) => {
+    // 工程ごとに時間をずらす（入荷→検品15-30分後→入庫さらに20-40分後）
+    let minutesOffset = 0;
+    if (processIndex === 1) minutesOffset = randomIntInRange(15, 30); // 検品
+    if (processIndex === 2) minutesOffset = randomIntInRange(45, 70); // 入庫
+
+    const arrivalDateTime = adjustMinutes(baseDateTime, minutesOffset);
+
+    return {
+      id: `APL-${pad(baseIndex * 3 + processIndex + 1, 4)}`,
+      arrivalId: base.arrivalId,
+      itemInfo: base.itemInfo,
+      skuInfo: base.skuInfo,
+      huInfo: base.huInfo,
+      quantity: base.quantity,
       arrivalDateTime,
+      process,
     };
   });
 });
@@ -224,6 +266,7 @@ export const arrivalActuals: ArrivalActual[] = arrivalPlans.map((plan, index) =>
     quantity: actualQuantity,
     actualArrivalDateTime,
     recordedAt: adjustMinutes(actualArrivalDateTime, recordingDelay),
+    process: plan.process,
   };
 });
 

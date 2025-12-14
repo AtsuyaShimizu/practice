@@ -1,0 +1,143 @@
+@if (chartData()) {
+  <!-- 棒グラフ -->
+  <div class="bar-chart" #chartContainer>
+    <svg
+      class="chart-svg"
+      [attr.width]="width"
+      [attr.height]="height"
+      [attr.viewBox]="'0 0 ' + width + ' ' + height"
+    >
+      <!-- グラフ描画エリア -->
+      <g [attr.transform]="'translate(' + padding.left + ',' + padding.top + ')'">
+        <!-- グリッド線 -->
+        @if (chartData()?.config?.showGrid) {
+          <g class="grid">
+            @for (line of getHorizontalGridLines(); track $index) {
+              <line
+                [attr.x1]="0"
+                [attr.y1]="line"
+                [attr.x2]="chartWidth"
+                [attr.y2]="line"
+                class="grid-line"
+              />
+            }
+          </g>
+        }
+
+        <!-- X軸 -->
+        <line
+          [attr.x1]="0"
+          [attr.y1]="chartHeight"
+          [attr.x2]="chartWidth"
+          [attr.y2]="chartHeight"
+          class="axis-line"
+        />
+
+        <!-- Y軸 -->
+        <line
+          [attr.x1]="0"
+          [attr.y1]="0"
+          [attr.x2]="0"
+          [attr.y2]="chartHeight"
+          class="axis-line"
+        />
+
+        <!-- Y軸メモリ -->
+        @for (tick of getYAxisTicks(); track $index) {
+          <line
+            [attr.x1]="-5"
+            [attr.y1]="tick.y"
+            [attr.x2]="0"
+            [attr.y2]="tick.y"
+            class="axis-tick"
+          />
+        }
+
+        <!-- 棒グラフ -->
+        @for (group of getBarGroups(); track group.category) {
+          <g class="bar-group">
+            @for (bar of group.bars; track bar.seriesIndex) {
+              <rect
+                [attr.x]="bar.barX"
+                [attr.y]="bar.barY"
+                [attr.width]="bar.barWidth"
+                [attr.height]="bar.barHeight"
+                [attr.fill]="bar.color"
+                class="bar"
+                (mouseenter)="showTooltip($event, bar, group.category)"
+                (mouseleave)="hideTooltip()"
+              />
+            }
+          </g>
+        }
+      </g>
+
+      <!-- X軸ラベル（カテゴリ名） -->
+      @for (group of getBarGroups(); track group.category) {
+        <text
+          [attr.x]="group.x + padding.left"
+          [attr.y]="height - padding.bottom + 20"
+          class="axis-label"
+          text-anchor="middle"
+        >
+          {{ group.category }}
+        </text>
+      }
+
+      <!-- Y軸ラベル -->
+      @for (label of getYAxisLabels(); track $index) {
+        <text
+          [attr.x]="padding.left - 10"
+          [attr.y]="label.y + padding.top"
+          class="axis-label"
+          text-anchor="end"
+          dominant-baseline="middle"
+        >
+          {{ label.text }}
+        </text>
+      }
+
+      <!-- Y軸タイトル -->
+      @if (chartData()?.config?.yAxisLabel) {
+        <text
+          [attr.x]="10"
+          [attr.y]="height / 2"
+          class="axis-title"
+          text-anchor="middle"
+          [attr.transform]="'rotate(-90, 10, ' + (height / 2) + ')'"
+        >
+          {{ chartData()?.config?.yAxisLabel }}
+        </text>
+      }
+
+      <!-- ツールチップ -->
+      @if (tooltip.visible) {
+        <g class="tooltip" [attr.transform]="'translate(' + tooltip.x + ',' + tooltip.y + ')'">
+          <rect
+            class="tooltip-background"
+            x="-60"
+            y="-50"
+            width="120"
+            height="45"
+            rx="4"
+          />
+          <text class="tooltip-series" x="0" y="-30" text-anchor="middle">
+            {{ tooltip.seriesName }}
+          </text>
+          <text class="tooltip-category" x="0" y="-12" text-anchor="middle">
+            {{ tooltip.category }}
+          </text>
+          <text class="tooltip-value" x="0" y="6" text-anchor="middle">
+            {{ tooltip.value }}
+          </text>
+        </g>
+      }
+    </svg>
+  </div>
+}
+
+@if (!chartData()) {
+  <div class="no-data">
+    データがありません
+  </div>
+}

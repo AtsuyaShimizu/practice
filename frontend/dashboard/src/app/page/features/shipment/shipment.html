@@ -1,3 +1,36 @@
 <app-board>
-  <p>出荷予実ページの内容がここに表示されます。</p>
+  <!-- 各スロット用のテンプレートを提供 -->
+  @for (slotIndex of [0, 1, 2, 3]; track slotIndex) {
+    <ng-template [appSlotContent]="slotIndex">
+      @if (layoutService.getGraphAtSlot(slotIndex); as graph) {
+        @switch (graph.type) {
+          @case (GraphType.ShipmentPlanActualLine) {
+            <app-shipment-plan-actual-line-chart
+              [plans]="shipmentPlans"
+              [actuals]="shipmentActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
+          @case (GraphType.ShipmentBar) {
+            <app-shipment-plan-actual-bar-chart
+              [plans]="shipmentPlans"
+              [actuals]="shipmentActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
+          @case (GraphType.ShipmentPie) {
+            <app-shipment-progress-pie-chart
+              [plans]="shipmentPlans"
+              [actuals]="shipmentActuals"
+              [showCloseButton]="true"
+              (onClose)="handleGraphClose(graph.id)"
+            />
+          }
+          <!-- 他のグラフタイプもここに追加可能 -->
+        }
+      }
+    </ng-template>
+  }
 </app-board>
