@@ -94,21 +94,7 @@
 
 .card-content {
   width: 100%;
-  height: calc(100% - 49px); // 45px (title + legend) + 4px margin
-  flex-shrink: 0;
-
-  // タイトルがない場合の高さ調整
-  .card-container:not(:has(.card-title)) & {
-    height: calc(100% - 24px); // legend only
-  }
-
-  // 凡例がない場合の高さ調整
-  .card-container:not(:has(.legend-container)) & {
-    height: calc(100% - 25px); // title only
-  }
-
-  // タイトルも凡例もない場合
-  .card-container:not(:has(.card-title)):not(:has(.legend-container)) & {
-    height: 100%;
-  }
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
